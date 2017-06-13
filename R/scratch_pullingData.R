@@ -613,8 +613,7 @@
   bic.sigma.xi <- 5*log(length(lsl.max))- 2*log(optim.like.temp.sigma.xi$optim$bestval)
   
   bic.mu.sigma.xi <- 6*log(length(lsl.max))- 2*log(optim.like.temp.mu.sigma.xi$optim$bestval)
-  
-  
+
   #
   #==============================================================================
   ## End
