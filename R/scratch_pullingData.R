@@ -19,6 +19,12 @@
   install.packages('raster')
   install.packages('DEoptim')
   
+  library(fExtremes)
+  library(extRemes)
+  library(lubridate)
+  library(zoo)
+  
+  
   #calling csv file
   dat.dir <- './data/'
   filetype <- 'csv'
@@ -46,18 +52,14 @@
   #===============================================================================
   # Storm surge
   #===============================================================================
-    library(fExtremes)
-    library(extRemes)
-    library(lubridate)
-    library(zoo)
-    
+
     # Get tide gauge data and prepare to analyze.
     
     years         <- data$Year
     years.unique  <- unique(years)
     n.years       <- length(years.unique) 
     lsl.mean      <- rep(0,length(n.years))
-    lsl.max       <- rep(max(data$lsl.norm[ind.thisyear]),length(n.years))
+    lsl.max       <- rep(0,length(n.years)) #max(data$lsl.norm[ind.thisyear])
     data$lsl.norm <- rep(NA,length(years))
     
     

@@ -6,7 +6,7 @@
 # Script in order to determine best fit parameters using optimization 
 
 #---------OPTIMIZATION---------------------------------------------------------------------------------------- 
-library(DEoptim)
+#library(DEoptim)
 
 log.like.calc <- function(data, location1, scale1, shape1){
   ll<-sum(devd(data, loc=location1, scale=scale1, shape=shape1, type=c('GEV'), log=TRUE))
@@ -308,6 +308,22 @@ for (j in 1:length(temp.values)){
 }
 
 
+#--------------functions for calculating fit values using RSME, BIC, AIC-------------------#
+rmse.calc <- function(data, fit.vals, esf.vals){
+  val <- sqrt(1/(length(data))*(sum(esf.vals - fit.vals)^2))
+  return(val)
+}
+
+aic.calc <- function(n.param, optim.best.val){
+  val <- 2*n.param - 2*log(optim.best.val)
+  return(val)
+}
+
+bic.calc <- function(n.param, optim.best.val, data){
+  val <- n.param*log(length(data)) - 2*log(optim.best.val)
+  return(val)
+}
+#------------------------------------------------------------------------------------------#
 
 #--------------------------RMSE For Optim Fits------------------------------------------------------------------------------------------------
 
@@ -335,6 +351,11 @@ rmse.mu.sigma.xi <- sqrt(1/(length(lsl.max))*(sum(esf.vals - sf.optim.mu.sigma.x
 #----------------AIC For Optim Fits------------------------------------------------------------------------------------------------------------------------
 #2k - 2 ln (L)
 
+aic.calc <- function(n.param, optim.best.val){
+  val <- 2*n.param - 2*log(optim.best.val)
+  return(val)
+}
+
 aic.mu <- 2*4 - 2*log(optim.like.temp.mu$optim$bestval)
 
 aic.sigma <- 2*4 - 2*log(optim.like.temp.sigma$optim$bestval)
@@ -351,6 +372,11 @@ aic.mu.sigma.xi <- 2*6 - 2*log(optim.like.temp.mu.sigma.xi$optim$bestval)
 
 #------------------BIC For Optim Fits------------------------------------------------------------------------------------------------------------------------ 
 #kln(n) - 2 ln(L)
+
+bic.calc <- function(n.param, optim.best.val, data){
+  val <- n.param*log(length(data)) - 2*log(optim.best.val)
+  return(val)
+}
 
 bic.mu<- 4*log(length(lsl.max)) - 2*log(optim.like.temp.mu$optim$bestval)
 
