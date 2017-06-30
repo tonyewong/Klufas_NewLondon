@@ -4,6 +4,17 @@
 # Modified on June 14, 2017
 #
 # Script in order to determine best fit parameters using optimization 
+library(DEoptim)
+
+setwd('~/codes/Klufas_NewLondon/R/')
+
+source('read_temp_data.R')
+temps <- read.temp.data()
+
+setwd('~/codes/Klufas_NewLondon/R/')
+source('read_tide_data.R')
+tide.data <- read.tide.data()
+
 
 #---------OPTIMIZATION---------------------------------------------------------------------------------------- 
 #library(DEoptim)
@@ -35,7 +46,7 @@ de.optim.val <- DEoptim.control(VTR = -Inf, strategy = 2, bs = FALSE, NP = 200,
                                 parallelType = 0, cluster = NULL, packages = c(), parVar = c(),
                                 foreachArgs = list())
 
-optim.like <- DEoptim(neg.log.like.calc, lower=lower.bound, upper=upper.bound, control=de.optim.val, data= lsl.max)
+optim.like <- DEoptim(neg.log.like.calc, lower=lower.bound, upper=upper.bound, control=de.optim.val, data= tide.data$max)
 
 value.to.use <- pevd(x.hgt, loc = optim.like$optim$bestmem[1], scale=optim.like$optim$bestmem[2], shape=optim.like$optim$bestmem[3], type=c('GEV'), lower.tail = FALSE)
 
@@ -170,18 +181,18 @@ p.names <- c('mu0', 'mu1', 'sigma', 'xi')
 upper.bound <- c(3000,1000, 1000, 5)
 lower.bound <- c(0,0, -100, -5)
 
-optim.like.temp.mu <- DEoptim(neg.log.like.calc, lower=lower.bound, upper=upper.bound, control=de.optim.val, data = lsl.max, temps = temp.values, parnames = p.names)
+optim.like.temp.mu <- DEoptim(neg.log.like.calc, lower=lower.bound, upper=upper.bound, control=de.optim.val, data = tide.data$max, temps = temp.values, parnames = p.names)
 
 plot(x.hgt, log10(sf.hgt), type='l', ylab = 'log probability', xlab = 'height [mm] of sea')
 title('Survival Function of height of sea [mm], New London CT, Non Stationary Mu')
 points(lsl.sorted.vals, log10(esf.vals))
 
-fit.vals.optim.mu <- rep(0, length(lsl.max))
+fit.vals.optim.mu <- rep(0, length(tide.data$max))
 
 for (j in 1:length(temp.values)){
-  sf.optim.mu <- 1-pevd(lsl.max[j], loc = (optim.like.temp.mu$optim$bestmem[1] + optim.like.temp.mu$optim$bestmem[2] * temp.values[j]), scale = exp(optim.like.temp.mu$optim$bestmem[3]) , shape = optim.like.temp.mu$optim$bestmem[4],type=c('GEV'))
+  sf.optim.mu <- 1-pevd(tide.data$max[j], loc = (optim.like.temp.mu$optim$bestmem[1] + optim.like.temp.mu$optim$bestmem[2] * temp.values[j]), scale = exp(optim.like.temp.mu$optim$bestmem[3]) , shape = optim.like.temp.mu$optim$bestmem[4],type=c('GEV'))
   fit.vals.optim.mu[j] <- sf.optim.mu
-  points(lsl.max[j], log10(sf.optim.mu), pch = 2, col='red')
+  points(tide.data$max[j], log10(sf.optim.mu), pch = 2, col='red')
 }
 #-----non sationary mu and sigma ----------- works ---------------------------------------- --------------------------------------------------- --------------------------------------------------- 
 
@@ -190,18 +201,18 @@ p.names <- c('mu0', 'mu1', 'sigma0', 'sigma1' , 'xi')
 upper.bound <- c(3000,100, 1000, 10 , 5)
 lower.bound <- c(0,-100, 0, 0, -5)
 
-optim.like.temp.mu.sigma <- DEoptim(neg.log.like.calc, lower=lower.bound, upper=upper.bound, control=de.optim.val, data = lsl.max, temps = temp.values,parnames = p.names)
+optim.like.temp.mu.sigma <- DEoptim(neg.log.like.calc, lower=lower.bound, upper=upper.bound, control=de.optim.val, data = tide.data$max, temps = temp.values,parnames = p.names)
 
-fit.vals.optim.mu.sigma <- rep(0, length(lsl.max))
+fit.vals.optim.mu.sigma <- rep(0, length(tide.data$max))
 
 #-------run for plot of non sationary mu and sigma 
 plot(x.hgt, log10(sf.hgt), type='l', ylab = 'log probability', xlab = 'height [mm] of sea')
 title('Survival Function of height of sea [mm], New London CT, non stationary mu and sigma')
 points(lsl.sorted.vals, log10(esf.vals))
 for (j in 1:length(temp.values)){
-  sf.optim.mu.sigma <- 1 - pevd(lsl.max[j], loc = (optim.like.temp.mu.sigma$optim$bestmem[1] + optim.like.temp.mu.sigma$optim$bestmem[2] * temp.values[j]), scale = exp(optim.like.temp.mu.sigma$optim$bestmem[3] + optim.like.temp.mu.sigma$optim$bestmem[4]*temp.values[j]), shape = optim.like.temp.mu.sigma$optim$bestmem[5],type=c('GEV'))
+  sf.optim.mu.sigma <- 1 - pevd(tide.data$max[j], loc = (optim.like.temp.mu.sigma$optim$bestmem[1] + optim.like.temp.mu.sigma$optim$bestmem[2] * temp.values[j]), scale = exp(optim.like.temp.mu.sigma$optim$bestmem[3] + optim.like.temp.mu.sigma$optim$bestmem[4]*temp.values[j]), shape = optim.like.temp.mu.sigma$optim$bestmem[5],type=c('GEV'))
   fit.vals.optim.mu.sigma[j] <- sf.optim.mu.sigma
-  points(lsl.max[j], log10(sf.optim.mu.sigma), pch = 2, col='green')
+  points(tide.data$max[j], log10(sf.optim.mu.sigma), pch = 2, col='green')
   
 }
 #------all variables non sationary --------------------------------------this one does work ------------- --------------------------------------------------- --------------------------------------------------- 
@@ -210,18 +221,18 @@ p.names <- c('mu0', 'mu1', 'sigma0', 'sigma1' , 'xi0', 'xi1')
 upper.bound <- c(3000,100, 1000, 10 , 1, 1)
 lower.bound <- c(0,-100, 0, 0, -1, -1)
 
-optim.like.temp.mu.sigma.xi <- DEoptim(neg.log.like.calc, lower=lower.bound, upper=upper.bound, control=de.optim.val, data = lsl.max, temps = temp.values, parnames = p.names)
+optim.like.temp.mu.sigma.xi <- DEoptim(neg.log.like.calc, lower=lower.bound, upper=upper.bound, control=de.optim.val, data = tide.data$max, temps = temp.values, parnames = p.names)
 
-fit.vals.optim.mu.sigma.xi <- rep(0, length(lsl.max))
+fit.vals.optim.mu.sigma.xi <- rep(0, length(tide.data$max))
 
 #---------run for plot of non sationary mu and sigma and xi
 plot(x.hgt, log10(sf.hgt), type='l', ylab = 'log probability', xlab = 'height [mm] of sea')
 title('Survival Function of height of sea [mm], New London CT, mu, sigma, xi all nonstationary')
 points(lsl.sorted.vals, log10(esf.vals))
 for (j in 1:length(temp.values)){
-  sf.optim.mu.sigma.xi <-1-pevd(lsl.max[j], loc = optim.like.temp.mu.sigma.xi$optim$bestmem[1] + optim.like.temp.mu.sigma.xi$optim$bestmem[2] * temp.values[j], scale = exp(optim.like.temp.mu.sigma.xi$optim$bestmem[3] + optim.like.temp.mu.sigma.xi$optim$bestmem[4]*temp.values[j]), shape = optim.like.temp.mu.sigma.xi$optim$bestmem[5] + optim.like.temp3$optim$bestmem[6]*temp.values[j],type=c('GEV'))
+  sf.optim.mu.sigma.xi <-1-pevd(tide.data$max[j], loc = optim.like.temp.mu.sigma.xi$optim$bestmem[1] + optim.like.temp.mu.sigma.xi$optim$bestmem[2] * temp.values[j], scale = exp(optim.like.temp.mu.sigma.xi$optim$bestmem[3] + optim.like.temp.mu.sigma.xi$optim$bestmem[4]*temp.values[j]), shape = optim.like.temp.mu.sigma.xi$optim$bestmem[5] + optim.like.temp3$optim$bestmem[6]*temp.values[j],type=c('GEV'))
   fit.vals.optim.mu.sigma.xi[j] <- sf.optim.mu.sigma.xi
-  points(lsl.max[j], log10(sf.optim.mu.sigma.xi), pch = 2, col='red')
+  points(tide.data$max[j], log10(sf.optim.mu.sigma.xi), pch = 2, col='red')
 }
 
 
@@ -232,9 +243,9 @@ p.names <- c('mu', 'sigma0', 'sigma1' , 'xi0', 'xi1')
 upper.bound <- c(3000, 1000, 10 , 1, 1)
 lower.bound <- c(0, -100, 0, -1, -1)
 
-optim.like.temp.sigma.xi <- DEoptim(neg.log.like.calc, lower=lower.bound, upper=upper.bound, control=de.optim.val, data = lsl.max, temps = temp.values, parnames = p.names)
+optim.like.temp.sigma.xi <- DEoptim(neg.log.like.calc, lower=lower.bound, upper=upper.bound, control=de.optim.val, data = tide.data$max, temps = temp.values, parnames = p.names)
 
-fit.vals.optim.sigma.xi <- rep(0, length(lsl.max))
+fit.vals.optim.sigma.xi <- rep(0, length(tide.data$max))
 
 
 #---------run for plot of non sationary sigma and xi
@@ -242,9 +253,9 @@ plot(x.hgt, log10(sf.hgt), type='l', ylab = 'log probability', xlab = 'height [m
 title('Survival Function of height of sea [mm], New London CT, non stationary sigma and xi ')
 points(lsl.sorted.vals, log10(esf.vals))
 for (j in 1:length(temp.values)){
-  sf.optim5.sigma.xi <-1-pevd(lsl.max[j], loc = optim.like.temp.sigma.xi$optim$bestmem[1], scale = exp(optim.like.temp.sigma.xi$optim$bestmem[2] + optim.like.temp.sigma.xi$optim$bestmem[3]*temp.values[j]), shape = optim.like.temp.sigma.xi$optim$bestmem[4] + optim.like.temp.sigma.xi$optim$bestmem[5]*temp.values[j],type=c('GEV'))
+  sf.optim5.sigma.xi <-1-pevd(tide.data$max[j], loc = optim.like.temp.sigma.xi$optim$bestmem[1], scale = exp(optim.like.temp.sigma.xi$optim$bestmem[2] + optim.like.temp.sigma.xi$optim$bestmem[3]*temp.values[j]), shape = optim.like.temp.sigma.xi$optim$bestmem[4] + optim.like.temp.sigma.xi$optim$bestmem[5]*temp.values[j],type=c('GEV'))
   fit.vals.optim.sigma.xi[j] <- sf.optim5.sigma.xi
-  points(lsl.max[j], log10(sf.optim5.sigma.xi), pch = 2, col='red')
+  points(tide.data$max[j], log10(sf.optim5.sigma.xi), pch = 2, col='red')
 }
 
 
@@ -255,17 +266,17 @@ p.names <- c('mu0', 'mu1', 'sigma', 'xi0', 'xi1')
 upper.bound <- c(3000, 100, 1000, 10, 10)
 lower.bound <- c(0, -100, 0, -1, -10)
 
-optim.like.temp.mu.xi <- DEoptim(neg.log.like.calc, lower=lower.bound, upper=upper.bound, control=de.optim.val, data = lsl.max, temps = temp.values, parnames = p.names)
+optim.like.temp.mu.xi <- DEoptim(neg.log.like.calc, lower=lower.bound, upper=upper.bound, control=de.optim.val, data = tide.data$max, temps = temp.values, parnames = p.names)
 
-fit.vals.optim.mu.xi <- rep(0, length(lsl.max))
+fit.vals.optim.mu.xi <- rep(0, length(tide.data$max))
 #---------run for plot of non sationary mu and xi
 plot(x.hgt, log10(sf.hgt), type='l', ylab = 'log probability', xlab = 'height [mm] of sea')
 title('Survival Function of height of sea [mm], New London CT, nonstationary mu and xi')
 points(lsl.sorted.vals, log10(esf.vals))
 for (j in 1:length(temp.values)){
-  sf.optim.mu.xi<-1-pevd(lsl.max[j], loc = optim.like.temp.mu.xi5$optim$bestmem[1] +optim.like.temp.mu.xi$optim$bestmem[2]*temp.values[j], scale = exp(optim.like.temp.mu.xi$optim$bestmem[3]), shape = optim.like.temp.mu.xi$optim$bestmem[4] + optim.like.temp.mu.xi$optim$bestmem[5]*temp.values[j],type=c('GEV'))
+  sf.optim.mu.xi<-1-pevd(tide.data$max[j], loc = optim.like.temp.mu.xi5$optim$bestmem[1] +optim.like.temp.mu.xi$optim$bestmem[2]*temp.values[j], scale = exp(optim.like.temp.mu.xi$optim$bestmem[3]), shape = optim.like.temp.mu.xi$optim$bestmem[4] + optim.like.temp.mu.xi$optim$bestmem[5]*temp.values[j],type=c('GEV'))
   fit.vals.optim.mu.xi[j] <- sf.optim.mu.xi
-  points(lsl.max[j], log10(sf.optim.mu.xi), pch = 2, col='red')
+  points(tide.data$max[j], log10(sf.optim.mu.xi), pch = 2, col='red')
 }
 
 #------only sigma non stationary -------------------------this works!!-------------------------- --------------------------------------------------- --------------------------------------------------- 
@@ -275,17 +286,17 @@ p.names <- c('mu', 'sigma0', 'sigma1', 'xi')
 upper.bound <- c(3000, 1000, 10, 1)
 lower.bound <- c(0, 0, -10, -1)
 
-optim.like.temp.sigma <- DEoptim(neg.log.like.calc, lower=lower.bound, upper=upper.bound, control=de.optim.val, data = lsl.max, temps = temp.values, parnames = p.names)
+optim.like.temp.sigma <- DEoptim(neg.log.like.calc, lower=lower.bound, upper=upper.bound, control=de.optim.val, data = tide.data$max, temps = temp.values, parnames = p.names)
 
-fit.vals.optim.sigma <- rep(0, length(lsl.max))
+fit.vals.optim.sigma <- rep(0, length(tide.data$max))
 #---------run for plot of non sationary sigma 
 plot(x.hgt, log10(sf.hgt), type='l', ylab = 'log probability', xlab = 'height [mm] of sea')
 title('Survival Function of height of sea [mm], New London CT, sigma non stationary')
 points(lsl.sorted.vals, log10(esf.vals))
 for (j in 1:length(temp.values)){
-  sf.optim.sigma <-1-pevd(lsl.max[j], loc = optim.like.temp.sigma$optim$bestmem[1], scale = exp(optim.like.temp.sigma$optim$bestmem[2] + optim.like.temp.sigma$optim$bestmem[3]*temp.values[j]), shape = optim.like.temp.sigma$optim$bestmem[4],type=c('GEV'))
+  sf.optim.sigma <-1-pevd(tide.data$max[j], loc = optim.like.temp.sigma$optim$bestmem[1], scale = exp(optim.like.temp.sigma$optim$bestmem[2] + optim.like.temp.sigma$optim$bestmem[3]*temp.values[j]), shape = optim.like.temp.sigma$optim$bestmem[4],type=c('GEV'))
   fit.vals.optim.sigma[j] <- sf.optim.sigma
-  points(lsl.max[j], log10(sf.optim.sigma), pch = 2, col='red')
+  points(tide.data$max[j], log10(sf.optim.sigma), pch = 2, col='red')
 }
 
 #------ only xi non stationary---------------------------------this works! ------------------ --------------------------------------------------- ---------------------------------------------------  
@@ -294,17 +305,17 @@ p.names <- c('mu', 'sigma', 'xi0', 'xi1')
 upper.bound <- c(3000, 500 , 1, 1)
 lower.bound <- c(0, 0, -1, -1)
 
-optim.like.temp.xi <- DEoptim(neg.log.like.calc, lower=lower.bound, upper=upper.bound, control=de.optim.val, data = lsl.max, temps = temp.values, parnames = p.names)
+optim.like.temp.xi <- DEoptim(neg.log.like.calc, lower=lower.bound, upper=upper.bound, control=de.optim.val, data = tide.data$max, temps = temp.values, parnames = p.names)
 
-fit.vals.optim.xi <- rep(0, length(lsl.max))
+fit.vals.optim.xi <- rep(0, length(tide.data$max))
 #---------run for plot of non sationary xi
 plot(x.hgt, log10(sf.hgt), type='l', ylab = 'log probability', xlab = 'height [mm] of sea')
 title('Survival Function of height of sea [mm], New London CT')
 points(lsl.sorted.vals, log10(esf.vals))
 for (j in 1:length(temp.values)){
-  sf.optim.xi <-1-pevd(lsl.max[j], loc = optim.like.temp.xi$optim$bestmem[1], scale = exp(optim.like.temp.xi$optim$bestmem[2]), shape = optim.like.temp.xi$optim$bestmem[3] + optim.like.temp.xi$optim$bestmem[4]*temp.values[j],type=c('GEV'))
+  sf.optim.xi <-1-pevd(tide.data$max[j], loc = optim.like.temp.xi$optim$bestmem[1], scale = exp(optim.like.temp.xi$optim$bestmem[2]), shape = optim.like.temp.xi$optim$bestmem[3] + optim.like.temp.xi$optim$bestmem[4]*temp.values[j],type=c('GEV'))
   fit.vals.optim.xi[j] <- sf.optim.xi
-  points(lsl.max[j], log10(sf.optim.xi), pch = 2, col='red')
+  points(tide.data$max[j], log10(sf.optim.xi), pch = 2, col='red')
 }
 
 
@@ -328,25 +339,25 @@ bic.calc <- function(n.param, optim.best.val, data){
 #--------------------------RMSE For Optim Fits------------------------------------------------------------------------------------------------
 
 #only mu non stationary 
-rmse.mu <- sqrt(1/(length(lsl.max))*(sum(esf.vals - fit.vals.optim.mu)^2))
+rmse.mu <- sqrt(1/(length(tide.data$max))*(sum(esf.vals - fit.vals.optim.mu)^2))
 
 #only sigma non stationary 
-rmse.sigma<- sqrt(1/(length(lsl.max))*(sum(esf.vals - fit.vals.optim.sigma)^2))
+rmse.sigma<- sqrt(1/(length(tide.data$max))*(sum(esf.vals - fit.vals.optim.sigma)^2))
 
 #xi non stationary 
-rmse.xi <- sqrt(1/(length(lsl.max))*(sum(esf.vals - fit.vals.optim.xi))^2)
+rmse.xi <- sqrt(1/(length(tide.data$max))*(sum(esf.vals - fit.vals.optim.xi))^2)
 
 #mu and sigma non stationary 
-rmse.mu.sigma <- sqrt(1/(length(lsl.max))*(sum(esf.vals - fit.vals.optim.mu.sigma)^2))
+rmse.mu.sigma <- sqrt(1/(length(tide.data$max))*(sum(esf.vals - fit.vals.optim.mu.sigma)^2))
 
 #mu and xi non stationary 
-rmse.mu.xi<- sqrt(1/(length(lsl.max))*(sum(esf.vals - fit.vals.optim.mu.xi))^2)
+rmse.mu.xi<- sqrt(1/(length(tide.data$max))*(sum(esf.vals - fit.vals.optim.mu.xi))^2)
 
 #sigma and xi non stationary 
-rmse.sigma.xi <- sqrt(1/(length(lsl.max))*(sum(esf.vals - fit.vals.optim.sigma.xi))^2)
+rmse.sigma.xi <- sqrt(1/(length(tide.data$max))*(sum(esf.vals - fit.vals.optim.sigma.xi))^2)
 
 #mu, sigma, xi non stationary 
-rmse.mu.sigma.xi <- sqrt(1/(length(lsl.max))*(sum(esf.vals - sf.optim.mu.sigma.xi))^2)
+rmse.mu.sigma.xi <- sqrt(1/(length(tide.data$max))*(sum(esf.vals - sf.optim.mu.sigma.xi))^2)
 
 #----------------AIC For Optim Fits------------------------------------------------------------------------------------------------------------------------
 #2k - 2 ln (L)
@@ -378,16 +389,16 @@ bic.calc <- function(n.param, optim.best.val, data){
   return(val)
 }
 
-bic.mu<- 4*log(length(lsl.max)) - 2*log(optim.like.temp.mu$optim$bestval)
+bic.mu<- 4*log(length(tide.data$max)) - 2*log(optim.like.temp.mu$optim$bestval)
 
-bic.sigma <- 4*log(length(lsl.max))- 2*log(optim.like.temp.sigma$optim$bestval)
+bic.sigma <- 4*log(length(tide.data$max))- 2*log(optim.like.temp.sigma$optim$bestval)
 
-bic.xi <- 4*log(length(lsl.max))- 2*log(optim.like.temp.xi$optim$bestval)
+bic.xi <- 4*log(length(tide.data$max))- 2*log(optim.like.temp.xi$optim$bestval)
 
-bic.mu.sigma<- 5*log(length(lsl.max))- 2*log(optim.like.temp.mu.sigma$optim$bestval)
+bic.mu.sigma<- 5*log(length(tide.data$max))- 2*log(optim.like.temp.mu.sigma$optim$bestval)
 
-bic.mu.xi <- 5*log(length(lsl.max))- 2*log(optim.like.temp.mu.xi$optim$bestval)
+bic.mu.xi <- 5*log(length(tide.data$max))- 2*log(optim.like.temp.mu.xi$optim$bestval)
 
-bic.sigma.xi <- 5*log(length(lsl.max))- 2*log(optim.like.temp.sigma.xi$optim$bestval)
+bic.sigma.xi <- 5*log(length(tide.data$max))- 2*log(optim.like.temp.sigma.xi$optim$bestval)
 
-bic.mu.sigma.xi <- 6*log(length(lsl.max))- 2*log(optim.like.temp.mu.sigma.xi$optim$bestval)
+bic.mu.sigma.xi <- 6*log(length(tide.data$max))- 2*log(optim.like.temp.mu.sigma.xi$optim$bestval)

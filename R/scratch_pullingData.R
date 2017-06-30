@@ -294,7 +294,8 @@
   title('Survival Function of height of sea [mm], New London CT')
   
   points(lsl.sorted.vals, log10(esf.vals)) 
-  lines(x.hgt, log10(sf.hgt2), col='red')
+  #lines(x.hgt, log10(sf.hgt2), col='red')
+  lines(x.hgt, log10(value.to.use), col='green')
   
   for (s in 1:10){
     sf.hgt.test <- 1-pevd(x.hgt, loc=sf.location.top10[s], scale=sf.scale.top10[s], shape=sf.shapes.top10[s], type=c("GEV"), lower.tail=TRUE)
@@ -446,7 +447,7 @@
   
   #-------run for plot of non sationary mu and sigma 
   plot(x.hgt, log10(sf.hgt), type='l', ylab = 'log probability', xlab = 'height [mm] of sea')
-  title('Survival Function of height of sea [mm], New London CT, non stationary mu and sigma')
+  title('Survival Function of height of sea [mm], New London CT, non-stationary mu, sigma')
   points(lsl.sorted.vals, log10(esf.vals))
   for (j in 1:length(temp.values)){
       sf.optim.mu.sigma <- 1 - pevd(lsl.max[j], loc = (optim.like.temp.mu.sigma$optim$bestmem[1] + optim.like.temp.mu.sigma$optim$bestmem[2] * temp.values[j]), scale = exp(optim.like.temp.mu.sigma$optim$bestmem[3] + optim.like.temp.mu.sigma$optim$bestmem[4]*temp.values[j]), shape = optim.like.temp.mu.sigma$optim$bestmem[5],type=c('GEV'))
@@ -469,7 +470,7 @@
   title('Survival Function of height of sea [mm], New London CT, mu, sigma, xi all nonstationary')
   points(lsl.sorted.vals, log10(esf.vals))
   for (j in 1:length(temp.values)){
-      sf.optim.mu.sigma.xi <-1-pevd(lsl.max[j], loc = optim.like.temp.mu.sigma.xi$optim$bestmem[1] + optim.like.temp.mu.sigma.xi$optim$bestmem[2] * temp.values[j], scale = exp(optim.like.temp.mu.sigma.xi$optim$bestmem[3] + optim.like.temp.mu.sigma.xi$optim$bestmem[4]*temp.values[j]), shape = optim.like.temp.mu.sigma.xi$optim$bestmem[5] + optim.like.temp3$optim$bestmem[6]*temp.values[j],type=c('GEV'))
+      sf.optim.mu.sigma.xi <-1-pevd(lsl.max[j], loc = optim.like.temp.mu.sigma.xi$optim$bestmem[1] + optim.like.temp.mu.sigma.xi$optim$bestmem[2] * temp.values[j], scale = exp(optim.like.temp.mu.sigma.xi$optim$bestmem[3] + optim.like.temp.mu.sigma.xi$optim$bestmem[4]*temp.values[j]), shape = optim.like.temp.mu.sigma.xi$optim$bestmem[5] + optim.like.temp.mu.sigma.xi$optim$bestmem[6]*temp.values[j],type=c('GEV'))
       fit.vals.optim.mu.sigma.xi[j] <- sf.optim.mu.sigma.xi
       points(lsl.max[j], log10(sf.optim.mu.sigma.xi), pch = 2, col='red')
     }
