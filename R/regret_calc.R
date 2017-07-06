@@ -231,14 +231,14 @@ devd.calculator <- function(p, param.names, temperature, data){
     
     xi <- xi0 + xi1*temperature
   }
-  val <- sum(devd(data, loc = mu , scale = sigma, shape = xi, type=c('GEV')))
+  val <- devd(data, loc = mu , scale = sigma, shape = xi, type=c('GEV'))
   return(val)
 }
 
 #calculates damage when no barrier 
 damage.calc <- function(x){
   if (x > 2.850){
-    val <- 1.951*exp(.4116*x) #/ upkeep.cost #in meters, in millions of dollars 
+    val <- 1e6*1.951*exp(.4116*x) #/ upkeep.cost #in meters, in millions of dollars 
   }
   else{
     val <- 0 
@@ -250,7 +250,7 @@ damage.calc <- function(x){
 #calculates damage with barrier present 
 damage.calc.w.barrier <- function(x){
   if (x > 3.28){
-    val <- 1.951*exp(.4116*x) #/ upkeep.cost #in m, in millions of dollars
+    val <- 1e6*1.951*exp(.4116*x) #/ upkeep.cost #in m, in millions of dollars
   }
   else{
     val <- 0 
@@ -280,12 +280,14 @@ regret.calculator <- function(niter,
   hgt.changing <- seq(from = 2850, to = 2808, by = -2 ) #this is hard coded at the moment to try to get it to work 
   hgt.barrier.changing <- seq(from = 3280, to = 3238, by = -2)
   
+  n.years <- length(years)
+  
   #calculate cdf of flooding w no barrier and sea level  
   #temp included if non stationary 
   prob.of.flood <- matrix(ncol = length(years), nrow = niter)
   pb <- txtProgressBar(min=0,max=niter,initial=0,style=3)
   for(i in 5e4:niter){ #cutting off the start before convergence , need temp prediction of the future 
-    for (t in 1:21){
+    for (t in 1:n.years){
       prob.of.flood[i,t] <- pevd.calculator(p=mcmc.chain[i,], param.names=param.names, temps[t], data.pt=hgt.changing[t]) 
     }
     setTxtProgressBar(pb, i)
@@ -297,51 +299,61 @@ regret.calculator <- function(niter,
   prob.of.flood.barrier <- matrix(ncol = length(years), nrow = niter)
   pb <- txtProgressBar(min=0,max=niter,initial=0,style=3)
   for(i in 5e4:niter){
-    for (t in 1:21){
+    for (t in 1:n.years){
       prob.of.flood.barrier[i,t] <- pevd.calculator(p=mcmc.chain[i,], param.names=param.names, temps[t], data.pt=hgt.barrier.changing[t]) 
     }
     setTxtProgressBar(pb, i)
   }
   
   #calculating the gev of each set of parameters - w barrier 
-  for (t in 1:21){
-    new.vals.barrier[t] <- devd.calculator(p= mcmc.chain[i,], param.names = param.names, temps[t], data = hgt.barrier.changing)
+  new.vals.barrier <- matrix(ncol = length(years), nrow = niter)
+  for(i in 5e4:niter){
+    for (t in 1:n.years){
+      new.vals.barrier[i,t] <- devd.calculator(p= mcmc.chain[i,], param.names = param.names, temps[t], data = hgt.barrier.changing)
+    }
   }
   #no barrier 
-  for (t in 1:21){
-    new.vals.no.barrier[t] <- devd.calculator( p= mcmc.chain[i,], param.names = param.names, temps[t], data = hgt.changing)
+  new.vals.barrier <- matrix(ncol = length(years), nrow = niter)
+  for (t in 1:n.years){
+    new.vals.no.barrier[t] <- devd.calculator( p= mcmc.chain[t,], param.names = param.names, temps[t], data = hgt.changing)
   }
   
   
   #calculating damage at each height on the spectrum (0 to 4.75m)
-  sea.level <- seq(from=0, to = 5.0, by = .25) #len = 20 
+  sea.level <- seq(from=0, to = 10.0, by = .05) #len = 20 
   
-  damage.values <- rep(0, length(sea.level) + 1) #len = 20 
+  damage.values <- rep(0, length(sea.level)) #len = 20 
+  
+  #also need to calculate expected flood damage in each year 
+  expect.flood.damage.no.barrier <- rep(0, n.years)
+  expect.flood.damage.w.barrier <- rep(0, n.years)
+  
   for (i in 1:length(sea.level)){
-    damage.values[i] <- damage.calc(sea.level[i])*1e6
+    damage.values[i] <- damage.calc(sea.level[i])
+    #expect.flood.damage.no.barrier[i] <- sum(damage.values[i]* new.vals.no.barrier) / sum(new.vals.no.barrier)
   }
   
-  damage.values.w.barrier <- rep(0, length(sea.level) +1) #len = 21 
+  expect.value.no.barrier <- sum(damage.values * new.vals.no.barrier) / sum(new.vals.no.barrier)
+  
+  damage.values.w.barrier <- rep(0, length(sea.level)) #len = 21 
   for (i in 1:length(sea.level)){
-    damage.values.w.barrier[i] <- damage.calc.w.barrier(sea.level[i])*1e6
+    damage.values.w.barrier[i] <- damage.calc.w.barrier(sea.level[i])
+    #expect.flood.damage.w.barrier[i] <- sum(damage.values.w.barrier[i]* new.vals.barrier) / sum(new.vals.barrier)
   }
+  
+  expect.value.w.barrier <- sum(damage.values.w.barrier*new.vals.barrier) / sum(new.vals.barrier)
   
   #steps between the years 
-  dx <- seq(from = 0 , to = 20, by = 1) #len = 21
+  dx <- .05
   
   #calculating the avergae value of damage w and w/o barrier 
-  avg.w.barrier <- sum(damage.values.w.barrier*new.vals.barrier) #took out dx temporarily 
-  avg.wo.barrier <- sum(damage.values*new.vals.no.barrier)
-  
+ # avg.w.barrier <- sum(damage.values.w.barrier*new.vals.barrier) / sum(new.vals.barrier) #took out dx temporarily 
+ # avg.wo.barrier <- sum(damage.values*new.vals.no.barrier) / sum(new.vals.no.barrier)
+  avg.w.barrier <- mean(expect.value.w.barrier)
+  avg.wo.barrier <- mean(expect.value.no.barrier)
   #calculating flood damage overall w and w/o barrier 
   flood.damage.no.barrier <- avg.wo.barrier * prob.of.flood[5e4:niter,]
-  flood.damage.w.barrier <- avg.w.barrier * prob.of.flood.barrier[5e4:niter,] + initial.build.cost + upkeep.cost
-  
-  #compare the values now to determine whether to build or not to build 
-  #if it is neg or positive - can tell us whether to build or not build 
-  #new.stuff <- flood.damage.no.barrier - flood.damage.w.barrier
-  #time <- 90001
-  #array <- matrix(ncol = 2, nrow = time)
+  flood.damage.w.barrier <- avg.w.barrier * prob.of.flood.barrier[5e4:niter,] + initial.build.cost
   
   #find the average values of damage costs for each iteration 
   avg.damage.no.barrier <- apply(flood.damage.no.barrier, 1, mean)
@@ -364,9 +376,10 @@ regret.calculator <- function(niter,
     #regret.vals[i] <- abs(avg.damage.no.barrier[should.build[i]] - avg.damage.w.barrier[should.build[i]])
   }
   
-  regret.calc.out <- vector('list', 7)
+  regret.calc.out <- vector('list', 9)
   
-  names(regret.calc.out) <- c('no.barrier', 'w.barrier', 'regret.array', 'should.build', 'shouldnt.build', 'avg.no.barrier','avg.w.barrier')
+  names(regret.calc.out) <- c('no.barrier', 'w.barrier', 'regret.array', 'should.build', 
+                              'shouldnt.build', 'avg.no.barrier','avg.w.barrier', 'flood.prob', 'flood.w.barrier.prob')
   
   regret.calc.out$no.barrier <- flood.damage.no.barrier[,1:20]
   
@@ -381,6 +394,10 @@ regret.calculator <- function(niter,
   regret.calc.out$avg.no.barrier <- avg.damage.no.barrier
   
   regret.calc.out$avg.w.barrier <- avg.damage.w.barrier
+  
+  regret.calc.out$flood.prob <- prob.of.flood[5e4:niter,]
+  
+  regret.calc.out$flood.w.barrier.prob <- prob.of.flood.barrier[5e4:niter,]
   
   return(regret.calc.out)
   
