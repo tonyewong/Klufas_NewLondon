@@ -486,6 +486,21 @@ effect.height.no.barrier <- 2850
 slr <- 2.57
 #source('adaptive_mcmc_nonstat.R')
 load('mcmc.test.stationary.parallel.RData') # <<<<<<<<<<<<<<<<<<<<<<<<< messing up 'damage.values' (and maybe some other stuff) FIX ME
+sea.level.m <- seq(from=0, to = 10.0, by = .05)
+
+sea.level.mm <- seq(from=0, to = 10000, by = 50)
+
+#calculate damage w no barrier, make matrix 
+damage.values <- rep(0, length(sea.level.m)) 
+for (i in 1:length(sea.level.m)){
+  damage.values[i] <- damage.calc(sea.level.m[i])*1e6
+}
+
+#calculate damage w barrier, make matrix 
+damage.values.w.barrier <- rep(0, length(sea.level.m)) #len = 21 
+for (i in 1:length(sea.level.m)){
+  damage.values.w.barrier[i] <- damage.calc.w.barrier(sea.level.m[i])*1e6
+}
 param.names <- c('mu', 'sigma', 'xi')
 test1 <- mcmc.test.stationary.parallel[[1]]$samples
 

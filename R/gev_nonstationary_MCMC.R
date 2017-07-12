@@ -25,7 +25,7 @@ log.like.calc.nonstat <- function(p, parnames, data){ #non stationary
     mu <- p[1]
     sigma <- p[2]
     xi <- p[3]
-    vals <- temps$values*2  #because I was getting error that "temps" wasn't being used for some reason 
+    #vals <- temps$values*2  #because I was getting error that "temps" wasn't being used for some reason 
   }
   
   #one stationary parameter
@@ -37,6 +37,7 @@ log.like.calc.nonstat <- function(p, parnames, data){ #non stationary
       xi <- p[4]
       
       mu <- mu0 + mu1*temps$values
+     # print(mu)
     }
     else if (parnames[2] == 'sigma0'){
       mu <- p[1]
@@ -52,7 +53,7 @@ log.like.calc.nonstat <- function(p, parnames, data){ #non stationary
       xi0 <- p[3]
       xi1 <- p[4]
       
-      sigma <- exp(sigma)
+      #sigma <- exp(sigma)
       xi <- xi0 + xi1*temps$values
     }
   }
@@ -88,12 +89,12 @@ log.like.calc.nonstat <- function(p, parnames, data){ #non stationary
       xi1 <- p[5]
       
       mu <- mu0 + mu1*temps$values
-      sigma <- exp(sigma)
+      #sigma <- exp(sigma)
       xi <- xi0 + xi1*temps$values
     }
   }
   #all parameters non stationary 
-  else if (n.parnames ==6){
+  else if (n.parnames == 6){
     mu0 <- p[1]
     mu1 <- p[2]
     sigma0 <- p[3]
@@ -101,11 +102,12 @@ log.like.calc.nonstat <- function(p, parnames, data){ #non stationary
     xi0 <- p[5]
     xi1 <- p[6]
     
-    mu <- mu0 + mu1*temps$values
+    mu <- mu0 + mu1*temps$values #mu0 + mu1*temps$values
     sigma <- exp(sigma0 + sigma1*temps$values)
     xi <- xi0 + xi1*temps$values
     
   }
+  
   nll <- sum(devd(data, loc=mu, scale=sigma, shape=xi, type=c('GEV'), log=TRUE))
   return(nll)
 }
@@ -130,8 +132,8 @@ log.like.pri.nonstat<- function(p, parnames, min, max, temps){
       sigma <- p[3]
       xi <- p[4]
       
-      mu <- mu0 + mu1*temps
-    
+      mu <-mu0 + mu1*temps
+      #print(mu)
     }
     else if (parnames[2] == 'sigma0'){
       mu <- p[1]
@@ -139,7 +141,7 @@ log.like.pri.nonstat<- function(p, parnames, min, max, temps){
       sigma1 <- p[3]
       xi <- p[4]
       
-      p.sigma <- sigma0+ sigma1*temps
+      sigma <- sigma0+ sigma1*temps
     }
     else{
       mu <- p[1]
@@ -147,7 +149,6 @@ log.like.pri.nonstat<- function(p, parnames, min, max, temps){
       xi0 <- p[3]
       xi1 <- p[4]
       
-      sigma <- sigma
       xi <- xi0 + xi1*temps
     }
   }
@@ -160,7 +161,7 @@ log.like.pri.nonstat<- function(p, parnames, min, max, temps){
       sigma0 <- p[3]
       sigma1 <- p[4]
       xi <- p[5]
-      
+      print('here')
       mu <- mu0 + mu1*temps
       sigma <- sigma0 + sigma1*temps
     }
@@ -170,7 +171,7 @@ log.like.pri.nonstat<- function(p, parnames, min, max, temps){
       sigma1 <- p[3]
       xi0 <- p[4]
       xi1 <- p[5]
-      
+      print('here')
       sigma <- sigma0 + sigma1*temps
       xi <- xi0 + xi1*temps
       
@@ -181,14 +182,14 @@ log.like.pri.nonstat<- function(p, parnames, min, max, temps){
       sigma <- p[3]
       xi0 <- p[4]
       xi1 <- p[5]
-      
+      #print('here')
       mu <- mu0 + mu1*temps
       xi <- xi0 + xi1*temps
     }
   }
   #all parameters non stationary 
   else if (n.parnames ==6){
-
+    #print('hererrr')
     mu0 <- p[1]
     mu1 <- p[2]
     sigma0 <- p[3]
@@ -197,17 +198,17 @@ log.like.pri.nonstat<- function(p, parnames, min, max, temps){
     xi1 <- p[6]
     
     mu <- mu0 + mu1*temps # I think it is freaking out because it doesn't know what temperature to use here well....
- 
+    #print(mu)
     sigma <- sigma0 + sigma1*temps
-  
+    #print(sigma)
     xi <- xi0 + xi1*temps
- 
+    #print(xi)
     
   }
   
  
   p.mu <- sum(dunif(x=mu, min= 0, max=3000, log = TRUE))
-
+  #print('here')
   p.sigma <- sum(dunif(x=sigma, min= 0, max=3000, log = TRUE))
 
   p.xi <- sum(dunif(x=xi, min= -10, max=10, log = TRUE))
@@ -226,11 +227,12 @@ log.post.final2 <- function(p, parnames, data, min, max, temps){
   
   if (is.finite(log.like.pri.nonstat)){
     log.like <- log.like.calc.nonstat(p, parnames, data)
-    
+    print('here2')
     log.like.final <- (log.like + log.like.pri.nonstat)
   }
   else{
     log.like.final <-log.like.pri.nonstat 
+    print('here3')
   }
   
   return(log.like.final)

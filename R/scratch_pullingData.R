@@ -95,7 +95,7 @@
   #curve that will be placed on top of hist 
   curve <- devd(x.lsl, loc=gev.mle$results$par[1], scale=gev.mle$results$par[2], shape=gev.mle$results$par[3], threshold=0, log=FALSE, type=c("GEV"))
   lines(curve, col = 'red')
-  
+  plot(curve, col='red')
   #creating steps of the liklihood function
   loc.move <- seq(from=0, to=3000, by=1)
   
@@ -307,6 +307,7 @@
   #-------------non-stationary work 
   
   #read temp data 
+  setwd('~/codes/Klufas_NewLondon/')
   temp.data <- read.table('noaa-temp-1880-2017.csv', header = TRUE, sep=',')
   temp.years <- temp.data$Year
   temp.values <- temp.data$Value[59:134]     #limit temp data to just the years I am working with 
@@ -338,7 +339,7 @@
       xi <- p[4]
   
       mu <- mu0 + mu1*temps
-      sigma <- exp(sigma)
+     # sigma <- sigma
       }
      else if (parnames[2] == 'sigma0'){
        mu <- p[1]
@@ -354,7 +355,7 @@
        xi0 <- p[3]
        xi1 <- p[4]
        
-       sigma <- exp(sigma)
+       #sigma <- sigma
        xi <- xi0 + xi1*temps
      }
    }
@@ -390,7 +391,7 @@
          xi1 <- p[5]
          
          mu <- mu0 + mu1*temps
-         sigma <- exp(sigma)
+         #sigma <- sigma
          xi <- xi0 + xi1*temps
        }
      }
@@ -404,7 +405,7 @@
       xi1 <- p[6]
       
       mu <- mu0 + mu1*temps
-      sigma <- exp(sigma0 + sigma1*temps)
+      sigma <- sigma0 + exp(sigma1*temps)
       xi <- xi0 + xi1*temps
       
     }
@@ -419,9 +420,9 @@
   p.names <- c('mu0', 'mu1', 'sigma', 'xi')
   
   upper.bound <- c(3000,1000, 1000, 5)
-  lower.bound <- c(0,0, -100, -5)
+  lower.bound <- c(0,-100, 0, -5)
   
-  optim.like.temp.mu <- DEoptim(neg.log.like.calc, lower=lower.bound, upper=upper.bound, control=de.optim.val, data = lsl.max, temps = temp.values, parnames = p.names)
+  optim.like.temp.mu <- DEoptim(neg.log.like.calc, lower=lower.bound, upper=upper.bound, data = lsl.max, temps = temp.values, parnames = p.names)
   
   plot(x.hgt, log10(sf.hgt), type='l', ylab = 'log probability', xlab = 'height [mm] of sea')
   title('Survival Function of height of sea [mm], New London CT, Non Stationary Mu')
@@ -430,10 +431,11 @@
   fit.vals.optim.mu <- rep(0, length(lsl.max))
   
   for (j in 1:length(temp.values)){
-    sf.optim.mu <- 1-pevd(lsl.max[j], loc = (optim.like.temp.mu$optim$bestmem[1] + optim.like.temp.mu$optim$bestmem[2] * temp.values[j]), scale = exp(optim.like.temp.mu$optim$bestmem[3]) , shape = optim.like.temp.mu$optim$bestmem[4],type=c('GEV'))
+    sf.optim.mu <- 1-pevd(lsl.max[j], loc = (optim.like.temp.mu$optim$bestmem[1] + optim.like.temp.mu$optim$bestmem[2] * temp.values[j]), scale = optim.like.temp.mu$optim$bestmem[3], shape = optim.like.temp.mu$optim$bestmem[4],type=c('GEV'))
     fit.vals.optim.mu[j] <- sf.optim.mu
     points(lsl.max[j], log10(sf.optim.mu), pch = 2, col='red')
   }
+  save.image('mu.nonstat.deoptim.RData')
   #-----non sationary mu and sigma ----------- works ---------------------------------------- --------------------------------------------------- --------------------------------------------------- 
   
   p.names <- c('mu0', 'mu1', 'sigma0', 'sigma1' , 'xi')
@@ -459,7 +461,7 @@
   p.names <- c('mu0', 'mu1', 'sigma0', 'sigma1' , 'xi0', 'xi1')
   
   upper.bound <- c(3000,100, 1000, 10 , 1, 1)
-  lower.bound <- c(0,-100, 0, 0, -1, -1)
+  lower.bound <- c(0,-100, 0, -10, -1, -1)
   
   optim.like.temp.mu.sigma.xi <- DEoptim(neg.log.like.calc, lower=lower.bound, upper=upper.bound, control=de.optim.val, data = lsl.max, temps = temp.values, parnames = p.names)
   
@@ -475,7 +477,7 @@
       points(lsl.max[j], log10(sf.optim.mu.sigma.xi), pch = 2, col='red')
     }
   
-  
+  save.image('DEOptim.allnonstat2.RData')
   
   #------sigma and xi non stationary----------------------works now! ----------------------- --------------------------------------------------- --------------------------------------------------- 
   p.names <- c('mu', 'sigma0', 'sigma1' , 'xi0', 'xi1')
