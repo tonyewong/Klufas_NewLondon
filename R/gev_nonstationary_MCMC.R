@@ -3,7 +3,7 @@
 setwd('~/codes/Klufas_NewLondon/R/')
 
 source('read_temp_data.R')
-temps <- read.temp.data()
+temps <- read.temp.data(1939,2014)
 
 setwd('~/codes/Klufas_NewLondon/R/')
 source('read_tide_data.R')
@@ -122,6 +122,12 @@ log.like.pri.nonstat<- function(p, parnames, min, max, temps){
     mu <- p[1]
     sigma <- p[2]
     xi <- p[3]
+    
+    p.mu <- dunif(x = mu, min = 0, max = 3000, log = TRUE)
+    p.sigma <- dunif(x=sigma, min = 0, max = 400, log = TRUE)
+    p.xi <- dunif(x=xi, min = -10, max = 10, log = TRUE)
+    
+    lpri <- p.mu + p.sigma + p.xi
   }
   
   #one stationary parameter
@@ -132,8 +138,12 @@ log.like.pri.nonstat<- function(p, parnames, min, max, temps){
       sigma <- p[3]
       xi <- p[4]
       
-      mu <-mu0 + mu1*temps
-      #print(mu)
+      p.mu0    <-  dunif(x= mu0, min = 0, max = 3000, log = TRUE)
+      p.mu1    <-  dunif(x= mu1, min = -500, max = 500, log = TRUE)
+      p.sigma  <-  dunif(x = sigma, min = 0, max = 400, log = TRUE)
+      p.xi     <-  dunif(x = xi, min = -10, max = 10, log = TRUE) 
+      
+      lpri <- p.mu0 + p.mu1 + p.sigma + p.xi
     }
     else if (parnames[2] == 'sigma0'){
       mu <- p[1]
@@ -141,7 +151,12 @@ log.like.pri.nonstat<- function(p, parnames, min, max, temps){
       sigma1 <- p[3]
       xi <- p[4]
       
-      sigma <- sigma0+ sigma1*temps
+      p.mu <-  dunif( x= mu, min = 0, max = 3000, log = TRUE)
+      p.sigma0 <- dunif(x =sigma0, min = -300, max = 300, log = TRUE)
+      p.sigma1 <- dunif(x=sigma1, min = -100, max = 200, log = TRUE)
+      p.xi <- dunif(x = xi, min = -10, max = 10, log = TRUE) 
+
+      lpri <- p.mu + p.sigma0 + p.sigma1 + p.xi
     }
     else{
       mu <- p[1]
@@ -149,7 +164,12 @@ log.like.pri.nonstat<- function(p, parnames, min, max, temps){
       xi0 <- p[3]
       xi1 <- p[4]
       
-      xi <- xi0 + xi1*temps
+      p.mu <-  dunif( x= mu, min = 0, max = 3000, log = TRUE)
+      p.sigma <- dunif(x = sigma, min = 0, max = 1000, log = TRUE)
+      p.xi0 <- dunif(x = xi0, min = -10, max = 10, log = TRUE)
+      p.xi1 <- dunif(x=xi1, min = -10, max = 10, log = TRUE) 
+      
+      lpri <- p.mu + p.sigma + p.xi0 + p.xi1
     }
   }
   
@@ -161,9 +181,15 @@ log.like.pri.nonstat<- function(p, parnames, min, max, temps){
       sigma0 <- p[3]
       sigma1 <- p[4]
       xi <- p[5]
-      print('here')
-      mu <- mu0 + mu1*temps
-      sigma <- sigma0 + sigma1*temps
+      
+      p.mu0 <-  dunif( x= mu0, min = 0, max = 3000, log = TRUE)
+      p.mu1 <- dunif(x=mu1, min = -500, max = 500, log = TRUE)
+      p.sigma0 <- dunif(x = sigma0, min = 0, max = 100, log = TRUE)
+      p.sigma1 <- dunif(x= sigma1, min = -100, max = 100, log = TRUE)
+      p.xi <- dunif(x = xi, min = -10, max = 10, log = TRUE)
+      
+      lpri <- p.mu0 + p.mu1 + p.sigma0 + sigma1 + p.xi
+      
     }
     else if(parnames[2] == 'sigma0' & parnames[4] == 'xi0'){
       mu <- p[1]
@@ -171,10 +197,14 @@ log.like.pri.nonstat<- function(p, parnames, min, max, temps){
       sigma1 <- p[3]
       xi0 <- p[4]
       xi1 <- p[5]
-      print('here')
-      sigma <- sigma0 + sigma1*temps
-      xi <- xi0 + xi1*temps
       
+      p.mu <-  dunif( x= mu, min = 0, max = 3000, log = TRUE)
+      p.sigma0 <- dunif(x = sigma0 , min = -100, max = 100, log = TRUE)
+      p.simga1 <- dunif(x = sigma1, min = -150 , max = 150, log = TRUE)
+      p.xi0 <- dunif(x = xi0, min= -10, max = 10, log = TRUE)
+      p.xi1 <- dunif( x = xi1, min = -10, max = 10, log = TRUE)
+      
+      lpri <- p.mu + p.sigma0 +p.sigma1 + p.xi0 +p.xi1
     }
     else{
       mu0 <- p[1]
@@ -183,8 +213,16 @@ log.like.pri.nonstat<- function(p, parnames, min, max, temps){
       xi0 <- p[4]
       xi1 <- p[5]
       #print('here')
-      mu <- mu0 + mu1*temps
-      xi <- xi0 + xi1*temps
+      
+      p.mu0 <-  dunif( x= mu0 , min = 0, max = 3000, log = TRUE)
+      p.mu1 <-  dunif( x= mu1, min = -100, max = 100, log = TRUE)
+      p.sigma <- dunif(x = sigma, min = 0, max = 1000, log = TRUE)
+      p.xi0 <- dunif(x = xi0 , min = -10, max = 10, log = TRUE)
+      p.xi1 <- dunif(x = xi1, min = -10, max = 10, log = TRUE)
+      
+      lpri <- p.mu0 +p.mu1 + p.sigma + p.xi0 +p.xi1
+     # mu <- mu0 + mu1*temps
+     # xi <- xi0 + xi1*temps
     }
   }
   #all parameters non stationary 
@@ -197,26 +235,28 @@ log.like.pri.nonstat<- function(p, parnames, min, max, temps){
     xi0 <- p[5]
     xi1 <- p[6]
     
-    mu <- mu0 + mu1*temps # I think it is freaking out because it doesn't know what temperature to use here well....
-    #print(mu)
-    sigma <- sigma0 + sigma1*temps
-    #print(sigma)
-    xi <- xi0 + xi1*temps
-    #print(xi)
+    p.mu0 <-  dunif( x= mu0, min = 0, max = 3000, log = TRUE)
+    p.mu1 <-  dunif( x=mu1, min = -500, max = 500, log = TRUE)
+    p.sigma0 <- dunif(x = sigma0 , min = -500, max = 500, log = TRUE)
+    p.sigma1 <- dunif(x = sigma1, min = -500, max = 500, log = TRUE)
+    p.xi0 <- dunif(x = xi0, min = -10, max = 10, log = TRUE)
+    p.xi1 <- dunif(x = xi1, min = -10, max = 10, log = TRUE)
     
+    lpri <- p.mu0 + p.mu1 + p.sigma0 + p.sigma1 + p.xi0 + p.xi1
+
   }
   
  
-  p.mu <- sum(dunif(x=mu, min= 0, max=3000, log = TRUE))
+  #p.mu <- sum(dunif(x=mu, min= 0, max=3000, log = TRUE))
   #print('here')
-  p.sigma <- sum(dunif(x=sigma, min= 0, max=3000, log = TRUE))
+ # p.sigma <- sum(dunif(x=sigma, min= 0, max=3000, log = TRUE))
 
-  p.xi <- sum(dunif(x=xi, min= -10, max=10, log = TRUE))
+  #p.xi <- sum(dunif(x=xi, min= -10, max=10, log = TRUE))
 
   
   #add together b/c logs
-  p.mu.sigma.xi <- p.mu  + p.sigma + p.xi
-  return(p.mu.sigma.xi)
+  #p.mu.sigma.xi <- p.mu  + p.sigma + p.xi
+  return(lpri)
 }
 
 log.post.final2 <- function(p, parnames, data, min, max, temps){
@@ -227,12 +267,12 @@ log.post.final2 <- function(p, parnames, data, min, max, temps){
   
   if (is.finite(log.like.pri.nonstat)){
     log.like <- log.like.calc.nonstat(p, parnames, data)
-    print('here2')
+    #print('here2')
     log.like.final <- (log.like + log.like.pri.nonstat)
   }
   else{
     log.like.final <-log.like.pri.nonstat 
-    print('here3')
+    #print('here3')
   }
   
   return(log.like.final)

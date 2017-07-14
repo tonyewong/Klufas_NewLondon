@@ -254,7 +254,7 @@
     sf.hgt.test <- 1-pevd(x.hgt, loc=sf.location.top10[s], scale=sf.scale.top10[s], shape=sf.shapes.top10[s], type=c("GEV"), lower.tail=TRUE)
     lines(x.hgt, log10(sf.hgt.test), col='blue')
   }
-  
+  load('DEOptim.allnonstat.RData')
   #---------OPTIMIZATION---------------------------------------------------------------------------------------- 
   library(DEoptim)
   
@@ -405,7 +405,7 @@
       xi1 <- p[6]
       
       mu <- mu0 + mu1*temps
-      sigma <- sigma0 + exp(sigma1*temps)
+      sigma <- exp(sigma0 + sigma1*temps)
       xi <- xi0 + xi1*temps
       
     }
@@ -441,7 +441,7 @@
   p.names <- c('mu0', 'mu1', 'sigma0', 'sigma1' , 'xi')
   
   upper.bound <- c(3000,100, 1000, 10 , 5)
-  lower.bound <- c(0,-100, 0, 0, -5)
+  lower.bound <- c(0,-100, 0, -10, -5)
   
   optim.like.temp.mu.sigma <- DEoptim(neg.log.like.calc, lower=lower.bound, upper=upper.bound, control=de.optim.val, data = lsl.max, temps = temp.values,parnames = p.names)
   
@@ -483,7 +483,7 @@
   p.names <- c('mu', 'sigma0', 'sigma1' , 'xi0', 'xi1')
   
   upper.bound <- c(3000, 1000, 10 , 1, 1)
-  lower.bound <- c(0, -100, 0, -1, -1)
+  lower.bound <- c(0, -100, -100, -1, -1)
   
   optim.like.temp.sigma.xi <- DEoptim(neg.log.like.calc, lower=lower.bound, upper=upper.bound, control=de.optim.val, data = lsl.max, temps = temp.values, parnames = p.names)
   
