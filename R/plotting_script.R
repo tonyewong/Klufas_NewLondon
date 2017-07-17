@@ -275,3 +275,531 @@ plot(density(mcmc.mu.sigma.xi.nonstat.parallel.post.burnin.1[,6]), col = 'blue')
 lines(dunif(seq(from = -10, to = 10, by = 1), min = -10, max = 10), type = 'l', col='blue', lty=2)
 #-------------------------------------------------------------------
 
+#year comparison plots w params---------------------------------------------------------------
+#load('10.year.gaps.RData')
+par(mfrow = c(3,2))
+par(mar = c(0,4,2,1))
+#mu0
+#new london
+nl.years <- c(10,20,30,40,50,60,76)
+nl.mu0 <- c(new.london.10$mu.sigma.xi[1],
+            new.london.20$mu.sigma.xi[1],
+            new.london.30$mu.sigma.xi[1],
+            new.london.40$mu.sigma.xi[1],
+            new.london.50$mu.sigma.xi[1],
+            new.london.60$mu.sigma.xi[1],
+            new.london.all$mu.sigma.xi[1])
+plot(nl.years, nl.mu0, type = 'l', xlim = c(0,110), ylim = c(950,2500), xaxt = 'n', ylab = 'mu0')
+points(10, new.london.10$mu.sigma.xi[1], cex = 1.5)
+points(20, new.london.20$mu.sigma.xi[1], cex = 1.5)
+points(30, new.london.30$mu.sigma.xi[1], cex = 1.5)
+points(40, new.london.40$mu.sigma.xi[1], cex = 1.5)
+points(50, new.london.50$mu.sigma.xi[1], cex = 1.5)
+points(60, new.london.60$mu.sigma.xi[1], cex = 1.5)
+points(76, new.london.all$mu.sigma.xi[1], cex = 1.5)
+
+#boston 
+bos.years <- c(10,20,30,40,50,60,70,80,94)
+bos.mu0 <- c(boston.10$mu.sigma.xi[1], 
+             boston.20$mu.sigma.xi[1], 
+             boston.30$mu.sigma.xi[1], 
+             boston.40$mu.sigma.xi[1] ,
+             boston.50$mu.sigma.xi[1], 
+             boston.60$mu.sigma.xi[1], 
+             boston.70$mu.sigma.xi[1], 
+             boston.80$mu.sigma.xi[1], 
+             boston.all$mu.sigma.xi[1])
+lines(bos.years, bos.mu0)
+points(10,boston.10$mu.sigma.xi[1], pch = 0, cex = 1.5)
+points(20,boston.20$mu.sigma.xi[1], pch = 0, cex = 1.5)
+points(30,boston.30$mu.sigma.xi[1], pch = 0, cex = 1.5)
+points(40,boston.40$mu.sigma.xi[1], pch = 0, cex = 1.5)
+points(50, boston.50$mu.sigma.xi[1], pch = 0, cex = 1.5)
+points(60, boston.60$mu.sigma.xi[1], pch = 0, cex = 1.5)
+points(70,boston.70$mu.sigma.xi[1], pch = 0, cex = 1.5)
+points(80,boston.80$mu.sigma.xi[1], pch = 0, cex = 1.5)
+points(94, boston.all$mu.sigma.xi[1], pch = 0, cex = 1.5)
+
+#atlantic city 
+al.city.years <- c(10,20,30,40,50,60,70,80,90, 103)
+al.city.mu0 <- c(atlantic.city.10$mu.sigma.xi[1], 
+                 atlantic.city.20$mu.sigma.xi[1],
+                 atlantic.city.30$mu.sigma.xi[1],
+                 atlantic.city.40$mu.sigma.xi[1],
+                 atlantic.city.50$mu.sigma.xi[1],
+                 atlantic.city.60$mu.sigma.xi[1],
+                 atlantic.city.70$mu.sigma.xi[1],
+                 atlantic.city.80$mu.sigma.xi[1],
+                 atlantic.city.90$mu.sigma.xi[1],
+                 atlantic.city.all$mu.sigma.xi[1])
+lines(al.city.years, al.city.mu0)
+points(10,atlantic.city.10$mu.sigma.xi[1], pch = 2, cex = 1.5)
+points(20,atlantic.city.20$mu.sigma.xi[1], pch = 2, cex = 1.5)
+points(30,atlantic.city.30$mu.sigma.xi[1], pch = 2, cex = 1.5)
+points(40,atlantic.city.40$mu.sigma.xi[1], pch = 2, cex = 1.5)
+points(50,atlantic.city.50$mu.sigma.xi[1], pch = 2, cex = 1.5)
+points(60,atlantic.city.60$mu.sigma.xi[1], pch = 2, cex = 1.5)
+points(70, atlantic.city.70$mu.sigma.xi[1],pch = 2, cex = 1.5)
+points(80, atlantic.city.80$mu.sigma.xi[1],pch = 2, cex = 1.5)
+points(90,atlantic.city.90$mu.sigma.xi[1], pch = 2, cex = 1.5)
+points(103,atlantic.city.all$mu.sigma.xi[1], pch = 2, cex = 1.5)
+
+#portland 
+portland.years <- c(10,20,30,40,50,60,70,80,90, 105)
+portland.mu0 <- c(portland.10$mu.sigma.xi[1], 
+                  portland.20$mu.sigma.xi[1],
+                  portland.30$mu.sigma.xi[1], 
+                  portland.40$mu.sigma.xi[1],
+                  portland.50$mu.sigma.xi[1],
+                  portland.60$mu.sigma.xi[1],
+                  portland.70$mu.sigma.xi[1],
+                  portland.80$mu.sigma.xi[1], 
+                  portland.90$mu.sigma.xi[1], 
+                  portland.all$mu.sigma.xi[1])
+lines(portland.years, portland.mu0)
+points(10,portland.10$mu.sigma.xi[1], pch = 3, cex = 1.5)
+points(20,portland.20$mu.sigma.xi[1], pch = 3, cex = 1.5)
+points(30,portland.30$mu.sigma.xi[1], pch = 3, cex = 1.5)
+points(40,portland.40$mu.sigma.xi[1], pch = 3, cex = 1.5)
+points(50, portland.50$mu.sigma.xi[1], pch = 3, cex = 1.5)
+points(60,portland.60$mu.sigma.xi[1], pch = 3, cex = 1.5)
+points(70,portland.70$mu.sigma.xi[1], pch = 3, cex = 1.5)
+points(80,portland.80$mu.sigma.xi[1], pch = 3, cex = 1.5)
+points(90,portland.90$mu.sigma.xi[1], pch = 3, cex = 1.5)
+points(105,portland.all$mu.sigma.xi[1], pch = 3, cex = 1.5)
+
+#legend(30, 2000, legend= c('30 year', '45 year', '60 year', 'all year'), 
+#lty =c(1,1,1,1), col=c('black', 'red','blue', 'green'), cex = .5)
+legend(60,2000, legend= c('New London', 'Boston', 'Atlantic City', 'Portland'), 
+       pch =c(1,0,2,3), 
+       col=c('black', 'black','black', 'black'), cex = .5)
+
+
+#mu1
+#new london
+nl.mu1 <- c(new.london.10$mu.sigma.xi[2],
+            new.london.20$mu.sigma.xi[2],
+            new.london.30$mu.sigma.xi[2],
+            new.london.40$mu.sigma.xi[2],
+            new.london.50$mu.sigma.xi[2],
+            new.london.60$mu.sigma.xi[2],
+            new.london.all$mu.sigma.xi[2])
+plot(nl.years, nl.mu1, type = 'l',xlim = c(0, 110), ylim = c(-150,150), xaxt = 'n', ylab = 'mu1')
+points(10, new.london.10$mu.sigma.xi[2], cex = 1.5)
+points(20, new.london.20$mu.sigma.xi[2], cex = 1.5)
+points(30, new.london.30$mu.sigma.xi[2], cex = 1.5)
+points(40, new.london.40$mu.sigma.xi[2], cex = 1.5)
+points(50, new.london.50$mu.sigma.xi[2], cex = 1.5)
+points(60, new.london.60$mu.sigma.xi[2], cex = 1.5)
+points(76, new.london.all$mu.sigma.xi[2], cex = 1.5)
+
+#boston 
+bos.mu1 <- c(boston.10$mu.sigma.xi[2], 
+             boston.20$mu.sigma.xi[2], 
+             boston.30$mu.sigma.xi[2], 
+             boston.40$mu.sigma.xi[2] ,
+             boston.50$mu.sigma.xi[2], 
+             boston.60$mu.sigma.xi[2], 
+             boston.70$mu.sigma.xi[2], 
+             boston.80$mu.sigma.xi[2], 
+             boston.all$mu.sigma.xi[2])
+lines(bos.years, bos.mu1)
+points(10,boston.10$mu.sigma.xi[2], pch = 0, cex = 1.5)
+points(20,boston.20$mu.sigma.xi[2], pch = 0, cex = 1.5)
+points(30,boston.30$mu.sigma.xi[2], pch = 0, cex = 1.5)
+points(40,boston.40$mu.sigma.xi[2], pch = 0, cex = 1.5)
+points(50, boston.50$mu.sigma.xi[2], pch = 0, cex = 1.5)
+points(60, boston.60$mu.sigma.xi[2], pch = 0, cex = 1.5)
+points(70,boston.70$mu.sigma.xi[2], pch = 0, cex = 1.5)
+points(80,boston.80$mu.sigma.xi[2], pch = 0, cex = 1.5)
+points(94, boston.all$mu.sigma.xi[2], pch = 0, cex = 1.5)
+
+#atlantic city 
+al.city.mu1 <- c(atlantic.city.10$mu.sigma.xi[2], 
+                 atlantic.city.20$mu.sigma.xi[2],
+                 atlantic.city.30$mu.sigma.xi[2],
+                 atlantic.city.40$mu.sigma.xi[2],
+                 atlantic.city.50$mu.sigma.xi[2],
+                 atlantic.city.60$mu.sigma.xi[2],
+                 atlantic.city.70$mu.sigma.xi[2],
+                 atlantic.city.80$mu.sigma.xi[2],
+                 atlantic.city.90$mu.sigma.xi[2],
+                 atlantic.city.all$mu.sigma.xi[2])
+lines(al.city.years, al.city.mu1)
+points(10,atlantic.city.10$mu.sigma.xi[2], pch = 2, cex = 1.5)
+points(20,atlantic.city.20$mu.sigma.xi[2], pch = 2, cex = 1.5)
+points(30,atlantic.city.30$mu.sigma.xi[2], pch = 2, cex = 1.5)
+points(40,atlantic.city.40$mu.sigma.xi[2], pch = 2, cex = 1.5)
+points(50,atlantic.city.50$mu.sigma.xi[2], pch = 2, cex = 1.5)
+points(60,atlantic.city.60$mu.sigma.xi[2], pch = 2, cex = 1.5)
+points(70, atlantic.city.70$mu.sigma.xi[2],pch = 2, cex = 1.5)
+points(80, atlantic.city.80$mu.sigma.xi[2],pch = 2, cex = 1.5)
+points(90,atlantic.city.90$mu.sigma.xi[2], pch = 2, cex = 1.5)
+points(103,atlantic.city.all$mu.sigma.xi[2], pch = 2, cex = 1.5)
+
+#portland 
+portland.mu1 <- c(portland.10$mu.sigma.xi[2], 
+                  portland.20$mu.sigma.xi[2],
+                  portland.30$mu.sigma.xi[2], 
+                  portland.40$mu.sigma.xi[2],
+                  portland.50$mu.sigma.xi[2],
+                  portland.60$mu.sigma.xi[2],
+                  portland.70$mu.sigma.xi[2],
+                  portland.80$mu.sigma.xi[2], 
+                  portland.90$mu.sigma.xi[2], 
+                  portland.all$mu.sigma.xi[2])
+lines(portland.years, portland.mu1)
+points(10,portland.10$mu.sigma.xi[2], pch = 3, cex = 1.5)
+points(20,portland.20$mu.sigma.xi[2], pch = 3, cex = 1.5)
+points(30,portland.30$mu.sigma.xi[2], pch = 3, cex = 1.5)
+points(40,portland.40$mu.sigma.xi[2], pch = 3, cex = 1.5)
+points(50, portland.50$mu.sigma.xi[2], pch = 3, cex = 1.5)
+points(60,portland.60$mu.sigma.xi[2], pch = 3, cex = 1.5)
+points(70,portland.70$mu.sigma.xi[2], pch = 3, cex = 1.5)
+points(80,portland.80$mu.sigma.xi[2], pch = 3, cex = 1.5)
+points(90,portland.90$mu.sigma.xi[2], pch = 3, cex = 1.5)
+points(105,portland.all$mu.sigma.xi[2], pch = 3, cex = 1.5)
+
+#sigma0 
+#new london
+par(mar = c(0,4,0,1))
+nl.sigma0 <- c(new.london.10$mu.sigma.xi[3],
+               new.london.20$mu.sigma.xi[3],
+               new.london.30$mu.sigma.xi[3],
+               new.london.40$mu.sigma.xi[3],
+               new.london.50$mu.sigma.xi[3],
+               new.london.60$mu.sigma.xi[3],
+               new.london.all$mu.sigma.xi[3])
+plot(nl.years, nl.sigma0, xlim = c(0, 110), ylim = c(1.75,6), type = 'l', xaxt = 'n', ylab = 'sigma0')
+points(10, new.london.10$mu.sigma.xi[3], cex = 1.5)
+points(20, new.london.20$mu.sigma.xi[3], cex = 1.5)
+points(30, new.london.30$mu.sigma.xi[3], cex = 1.5)
+points(40, new.london.40$mu.sigma.xi[3], cex = 1.5)
+points(50, new.london.50$mu.sigma.xi[3], cex = 1.5)
+points(60, new.london.60$mu.sigma.xi[3], cex = 1.5)
+points(76, new.london.all$mu.sigma.xi[3], cex = 1.5)
+
+#boston 
+bos.sigma0 <- c(boston.10$mu.sigma.xi[3], 
+                boston.20$mu.sigma.xi[3], 
+                boston.30$mu.sigma.xi[3], 
+                boston.40$mu.sigma.xi[3] ,
+                boston.50$mu.sigma.xi[3], 
+                boston.60$mu.sigma.xi[3], 
+                boston.70$mu.sigma.xi[3], 
+                boston.80$mu.sigma.xi[3], 
+                boston.all$mu.sigma.xi[3])
+lines(bos.years, bos.sigma0)
+points(10,boston.10$mu.sigma.xi[3], pch = 0, cex = 1.5)
+points(20,boston.20$mu.sigma.xi[3], pch = 0, cex = 1.5)
+points(30,boston.30$mu.sigma.xi[3], pch = 0, cex = 1.5)
+points(40,boston.40$mu.sigma.xi[3], pch = 0, cex = 1.5)
+points(50, boston.50$mu.sigma.xi[3], pch = 0, cex = 1.5)
+points(60, boston.60$mu.sigma.xi[3], pch = 0, cex = 1.5)
+points(70,boston.70$mu.sigma.xi[3], pch = 0, cex = 1.5)
+points(80,boston.80$mu.sigma.xi[3], pch = 0, cex = 1.5)
+points(94, boston.all$mu.sigma.xi[3], pch = 0, cex = 1.5)
+
+#atlantic city 
+al.city.sigma0 <- c(atlantic.city.10$mu.sigma.xi[3], 
+                    atlantic.city.20$mu.sigma.xi[3],
+                    atlantic.city.30$mu.sigma.xi[3],
+                    atlantic.city.40$mu.sigma.xi[3],
+                    atlantic.city.50$mu.sigma.xi[3],
+                    atlantic.city.60$mu.sigma.xi[3],
+                    atlantic.city.70$mu.sigma.xi[3],
+                    atlantic.city.80$mu.sigma.xi[3],
+                    atlantic.city.90$mu.sigma.xi[3],
+                    atlantic.city.all$mu.sigma.xi[3])
+lines(al.city.years, al.city.sigma0)
+points(10,atlantic.city.10$mu.sigma.xi[3], pch = 2, cex = 1.5)
+points(20,atlantic.city.20$mu.sigma.xi[3], pch = 2, cex = 1.5)
+points(30,atlantic.city.30$mu.sigma.xi[3], pch = 2, cex = 1.5)
+points(40,atlantic.city.40$mu.sigma.xi[3], pch = 2, cex = 1.5)
+points(50,atlantic.city.50$mu.sigma.xi[3], pch = 2, cex = 1.5)
+points(60,atlantic.city.60$mu.sigma.xi[3], pch = 2, cex = 1.5)
+points(70, atlantic.city.70$mu.sigma.xi[3],pch = 2, cex = 1.5)
+points(80, atlantic.city.80$mu.sigma.xi[3],pch = 2, cex = 1.5)
+points(90,atlantic.city.90$mu.sigma.xi[3], pch = 2, cex = 1.5)
+points(103,atlantic.city.all$mu.sigma.xi[3], pch = 2, cex = 1.5)
+
+#portland 
+portland.sigma0 <- c(portland.10$mu.sigma.xi[3], 
+                     portland.20$mu.sigma.xi[3],
+                     portland.30$mu.sigma.xi[3], 
+                     portland.40$mu.sigma.xi[3],
+                     portland.50$mu.sigma.xi[3],
+                     portland.60$mu.sigma.xi[3],
+                     portland.70$mu.sigma.xi[3],
+                     portland.80$mu.sigma.xi[3], 
+                     portland.90$mu.sigma.xi[3], 
+                     portland.all$mu.sigma.xi[3])
+lines(portland.years, portland.sigma0)
+points(10,portland.10$mu.sigma.xi[3], pch = 3, cex = 1.5)
+points(20,portland.20$mu.sigma.xi[3], pch = 3, cex = 1.5)
+points(30,portland.30$mu.sigma.xi[3], pch = 3, cex = 1.5)
+points(40,portland.40$mu.sigma.xi[3], pch = 3, cex = 1.5)
+points(50, portland.50$mu.sigma.xi[3], pch = 3, cex = 1.5)
+points(60,portland.60$mu.sigma.xi[3], pch = 3, cex = 1.5)
+points(70,portland.70$mu.sigma.xi[3], pch = 3, cex = 1.5)
+points(80,portland.80$mu.sigma.xi[3], pch = 3, cex = 1.5)
+points(90,portland.90$mu.sigma.xi[3], pch = 3, cex = 1.5)
+points(105,portland.all$mu.sigma.xi[3], pch = 3, cex = 1.5)
+
+#sigma1
+#new london
+nl.sigma1 <- c(new.london.10$mu.sigma.xi[4],
+               new.london.20$mu.sigma.xi[4],
+               new.london.30$mu.sigma.xi[4],
+               new.london.40$mu.sigma.xi[4],
+               new.london.50$mu.sigma.xi[4],
+               new.london.60$mu.sigma.xi[4],
+               new.london.all$mu.sigma.xi[4])
+plot(nl.years, nl.sigma1,xlim = c(0, 110), ylim = c(-3,5), type = 'l' , xaxt = 'n', ylab = 'sigma1')
+points(10, new.london.10$mu.sigma.xi[4], cex = 1.5)
+points(20, new.london.20$mu.sigma.xi[4], cex = 1.5)
+points(30, new.london.30$mu.sigma.xi[4], cex = 1.5)
+points(40, new.london.40$mu.sigma.xi[4], cex = 1.5)
+points(50, new.london.50$mu.sigma.xi[4], cex = 1.5)
+points(60, new.london.60$mu.sigma.xi[4], cex = 1.5)
+points(76, new.london.all$mu.sigma.xi[4], cex = 1.5)
+
+#boston 
+bos.sigma1 <- c(boston.10$mu.sigma.xi[4], 
+                boston.20$mu.sigma.xi[4], 
+                boston.30$mu.sigma.xi[4], 
+                boston.40$mu.sigma.xi[4] ,
+                boston.50$mu.sigma.xi[4], 
+                boston.60$mu.sigma.xi[4], 
+                boston.70$mu.sigma.xi[4], 
+                boston.80$mu.sigma.xi[4], 
+                boston.all$mu.sigma.xi[4])
+lines(bos.years, bos.sigma1 )
+
+points(10,boston.10$mu.sigma.xi[4], pch = 0, cex = 1.5)
+points(20,boston.20$mu.sigma.xi[4], pch = 0, cex = 1.5)
+points(30,boston.30$mu.sigma.xi[4], pch = 0, cex = 1.5)
+points(40,boston.40$mu.sigma.xi[4], pch = 0, cex = 1.5)
+points(50, boston.50$mu.sigma.xi[4], pch = 0, cex = 1.5)
+points(60, boston.60$mu.sigma.xi[4], pch = 0, cex = 1.5)
+points(70,boston.70$mu.sigma.xi[4], pch = 0, cex = 1.5)
+points(80,boston.80$mu.sigma.xi[4], pch = 0, cex = 1.5)
+points(94, boston.all$mu.sigma.xi[4], pch = 0, cex = 1.5)
+
+#atlantic city 
+al.city.sigma1 <- c(atlantic.city.10$mu.sigma.xi[4], 
+                    atlantic.city.20$mu.sigma.xi[4],
+                    atlantic.city.30$mu.sigma.xi[4],
+                    atlantic.city.40$mu.sigma.xi[4],
+                    atlantic.city.50$mu.sigma.xi[4],
+                    atlantic.city.60$mu.sigma.xi[4],
+                    atlantic.city.70$mu.sigma.xi[4],
+                    atlantic.city.80$mu.sigma.xi[4],
+                    atlantic.city.90$mu.sigma.xi[4],
+                    atlantic.city.all$mu.sigma.xi[4])
+lines(al.city.years, al.city.sigma1)
+points(10,atlantic.city.10$mu.sigma.xi[4], pch = 2, cex = 1.5)
+points(20,atlantic.city.20$mu.sigma.xi[4], pch = 2, cex = 1.5)
+points(30,atlantic.city.30$mu.sigma.xi[4], pch = 2, cex = 1.5)
+points(40,atlantic.city.40$mu.sigma.xi[4], pch = 2, cex = 1.5)
+points(50,atlantic.city.50$mu.sigma.xi[4], pch = 2, cex = 1.5)
+points(60,atlantic.city.60$mu.sigma.xi[4], pch = 2, cex = 1.5)
+points(70, atlantic.city.70$mu.sigma.xi[4],pch = 2, cex = 1.5)
+points(80, atlantic.city.80$mu.sigma.xi[4],pch = 2, cex = 1.5)
+points(90,atlantic.city.90$mu.sigma.xi[4], pch = 2, cex = 1.5)
+points(103,atlantic.city.all$mu.sigma.xi[4], pch = 2, cex = 1.5)
+
+#portland 
+portland.sigma1 <- c(portland.10$mu.sigma.xi[4], 
+                     portland.20$mu.sigma.xi[4],
+                     portland.30$mu.sigma.xi[4], 
+                     portland.40$mu.sigma.xi[4],
+                     portland.50$mu.sigma.xi[4],
+                     portland.60$mu.sigma.xi[4],
+                     portland.70$mu.sigma.xi[4],
+                     portland.80$mu.sigma.xi[4], 
+                     portland.90$mu.sigma.xi[4], 
+                     portland.all$mu.sigma.xi[4])
+lines(portland.years, portland.sigma1)
+points(10,portland.10$mu.sigma.xi[4], pch = 3, cex = 1.5)
+points(20,portland.20$mu.sigma.xi[4], pch = 3, cex = 1.5)
+points(30,portland.30$mu.sigma.xi[4], pch = 3, cex = 1.5)
+points(40,portland.40$mu.sigma.xi[4], pch = 3, cex = 1.5)
+points(50, portland.50$mu.sigma.xi[4], pch = 3, cex = 1.5)
+points(60,portland.60$mu.sigma.xi[4], pch = 3, cex = 1.5)
+points(70,portland.70$mu.sigma.xi[4], pch = 3, cex = 1.5)
+points(80,portland.80$mu.sigma.xi[4], pch = 3, cex = 1.5)
+points(90,portland.90$mu.sigma.xi[4], pch = 3, cex = 1.5)
+points(105,portland.all$mu.sigma.xi[4], pch = 3, cex = 1.5)
+
+#xi0
+#new london
+par(mar = c(4,4,0,1))
+nl.xi0 <- c(new.london.10$mu.sigma.xi[5],
+            new.london.20$mu.sigma.xi[5],
+            new.london.30$mu.sigma.xi[5],
+            new.london.40$mu.sigma.xi[5],
+            new.london.50$mu.sigma.xi[5],
+            new.london.60$mu.sigma.xi[5],
+            new.london.all$mu.sigma.xi[5])
+plot(nl.years, nl.xi0,xlim = c(0, 110), ylim = c(-1.5,1.5), type = 'l', ylab = 'xi0', xlab = 'Number of Years of Data')
+points(10, new.london.10$mu.sigma.xi[5], cex = 1.5)
+points(20, new.london.20$mu.sigma.xi[5], cex = 1.5)
+points(30, new.london.30$mu.sigma.xi[5], cex = 1.5)
+points(40, new.london.40$mu.sigma.xi[5], cex = 1.5)
+points(50, new.london.50$mu.sigma.xi[5], cex = 1.5)
+points(60, new.london.60$mu.sigma.xi[5], cex = 1.5)
+points(76, new.london.all$mu.sigma.xi[5], cex = 1.5)
+
+#boston 
+bos.xi0 <- c(boston.10$mu.sigma.xi[5], 
+             boston.20$mu.sigma.xi[5], 
+             boston.30$mu.sigma.xi[5], 
+             boston.40$mu.sigma.xi[5] ,
+             boston.50$mu.sigma.xi[5], 
+             boston.60$mu.sigma.xi[5], 
+             boston.70$mu.sigma.xi[5], 
+             boston.80$mu.sigma.xi[5], 
+             boston.all$mu.sigma.xi[5])
+lines(bos.years, bos.xi0)
+points(10,boston.10$mu.sigma.xi[5], pch = 0, cex = 1.5)
+points(20,boston.20$mu.sigma.xi[5], pch = 0, cex = 1.5)
+points(30,boston.30$mu.sigma.xi[5], pch = 0, cex = 1.5)
+points(40,boston.40$mu.sigma.xi[5], pch = 0, cex = 1.5)
+points(50, boston.50$mu.sigma.xi[5], pch = 0, cex = 1.5)
+points(60, boston.60$mu.sigma.xi[5], pch = 0, cex = 1.5)
+points(70,boston.70$mu.sigma.xi[5], pch = 0, cex = 1.5)
+points(80,boston.80$mu.sigma.xi[5], pch = 0, cex = 1.5)
+points(94, boston.all$mu.sigma.xi[5], pch = 0, cex = 1.5)
+
+#atlantic city 
+al.city.xi0 <- c(atlantic.city.10$mu.sigma.xi[5], 
+                 atlantic.city.20$mu.sigma.xi[5],
+                 atlantic.city.30$mu.sigma.xi[5],
+                 atlantic.city.40$mu.sigma.xi[5],
+                 atlantic.city.50$mu.sigma.xi[5],
+                 atlantic.city.60$mu.sigma.xi[5],
+                 atlantic.city.70$mu.sigma.xi[5],
+                 atlantic.city.80$mu.sigma.xi[5],
+                 atlantic.city.90$mu.sigma.xi[5],
+                 atlantic.city.all$mu.sigma.xi[5])
+lines(al.city.years, al.city.xi0)
+points(10,atlantic.city.10$mu.sigma.xi[5], pch = 2, cex = 1.5)
+points(20,atlantic.city.20$mu.sigma.xi[5], pch = 2, cex = 1.5)
+points(30,atlantic.city.30$mu.sigma.xi[5], pch = 2, cex = 1.5)
+points(40,atlantic.city.40$mu.sigma.xi[5], pch = 2, cex = 1.5)
+points(50,atlantic.city.50$mu.sigma.xi[5], pch = 2, cex = 1.5)
+points(60,atlantic.city.60$mu.sigma.xi[5], pch = 2, cex = 1.5)
+points(70, atlantic.city.70$mu.sigma.xi[5],pch = 2, cex = 1.5)
+points(80, atlantic.city.80$mu.sigma.xi[5],pch = 2, cex = 1.5)
+points(90,atlantic.city.90$mu.sigma.xi[5], pch = 2, cex = 1.5)
+points(103,atlantic.city.all$mu.sigma.xi[5], pch = 2, cex = 1.5)
+
+#portland 
+portland.xi0<- c(portland.10$mu.sigma.xi[5], 
+                 portland.20$mu.sigma.xi[5],
+                 portland.30$mu.sigma.xi[5], 
+                 portland.40$mu.sigma.xi[5],
+                 portland.50$mu.sigma.xi[5],
+                 portland.60$mu.sigma.xi[5],
+                 portland.70$mu.sigma.xi[5],
+                 portland.80$mu.sigma.xi[5], 
+                 portland.90$mu.sigma.xi[5], 
+                 portland.all$mu.sigma.xi[5])
+lines(portland.years, portland.xi0)
+points(10,portland.10$mu.sigma.xi[5], pch = 3, cex = 1.5)
+points(20,portland.20$mu.sigma.xi[5], pch = 3, cex = 1.5)
+points(30,portland.30$mu.sigma.xi[5], pch = 3, cex = 1.5)
+points(40,portland.40$mu.sigma.xi[5], pch = 3, cex = 1.5)
+points(50, portland.50$mu.sigma.xi[5], pch = 3, cex = 1.5)
+points(60,portland.60$mu.sigma.xi[5], pch = 3, cex = 1.5)
+points(70,portland.70$mu.sigma.xi[5], pch = 3, cex = 1.5)
+points(80,portland.80$mu.sigma.xi[5], pch = 3, cex = 1.5)
+points(90,portland.90$mu.sigma.xi[5], pch = 3, cex = 1.5)
+points(105,portland.all$mu.sigma.xi[5], pch = 3, cex = 1.5)
+
+#xi1
+#new london
+nl.xi1 <- c(new.london.10$mu.sigma.xi[6],
+            new.london.20$mu.sigma.xi[6],
+            new.london.30$mu.sigma.xi[6],
+            new.london.40$mu.sigma.xi[6],
+            new.london.50$mu.sigma.xi[6],
+            new.london.60$mu.sigma.xi[6],
+            new.london.all$mu.sigma.xi[6])
+plot(nl.years, nl.xi1, xlim = c(0, 110), ylim = c(-1.5,1.5), type = 'l', ylab = 'xi1', xlab = 'Number of Years of Data')
+points(10, new.london.10$mu.sigma.xi[6], cex = 1.5)
+points(20, new.london.20$mu.sigma.xi[6], cex = 1.5)
+points(30, new.london.30$mu.sigma.xi[6], cex = 1.5)
+points(40, new.london.40$mu.sigma.xi[6], cex = 1.5)
+points(50, new.london.50$mu.sigma.xi[6], cex = 1.5)
+points(60, new.london.60$mu.sigma.xi[6], cex = 1.5)
+points(76, new.london.all$mu.sigma.xi[6], cex = 1.5)
+
+#boston 
+bos.xi1 <- c(boston.10$mu.sigma.xi[6], 
+             boston.20$mu.sigma.xi[6], 
+             boston.30$mu.sigma.xi[6], 
+             boston.40$mu.sigma.xi[6] ,
+             boston.50$mu.sigma.xi[6], 
+             boston.60$mu.sigma.xi[6], 
+             boston.70$mu.sigma.xi[6], 
+             boston.80$mu.sigma.xi[6], 
+             boston.all$mu.sigma.xi[6])
+lines(bos.years, bos.xi1)
+points(10,boston.10$mu.sigma.xi[6], pch = 0, cex = 1.5)
+points(20,boston.20$mu.sigma.xi[6], pch = 0, cex = 1.5)
+points(30,boston.30$mu.sigma.xi[6], pch = 0, cex = 1.5)
+points(40,boston.40$mu.sigma.xi[6], pch = 0, cex = 1.5)
+points(50, boston.50$mu.sigma.xi[6], pch = 0, cex = 1.5)
+points(60, boston.60$mu.sigma.xi[6], pch = 0, cex = 1.5)
+points(70,boston.70$mu.sigma.xi[6], pch = 0, cex = 1.5)
+points(80,boston.80$mu.sigma.xi[6], pch = 0, cex = 1.5)
+points(94, boston.all$mu.sigma.xi[6], pch = 0, cex = 1.5)
+
+#atlantic city 
+al.city.xi1 <- c(atlantic.city.10$mu.sigma.xi[6], 
+                 atlantic.city.20$mu.sigma.xi[6],
+                 atlantic.city.30$mu.sigma.xi[6],
+                 atlantic.city.40$mu.sigma.xi[6],
+                 atlantic.city.50$mu.sigma.xi[6],
+                 atlantic.city.60$mu.sigma.xi[6],
+                 atlantic.city.70$mu.sigma.xi[6],
+                 atlantic.city.80$mu.sigma.xi[6],
+                 atlantic.city.90$mu.sigma.xi[6],
+                 atlantic.city.all$mu.sigma.xi[6])
+lines(al.city.years, al.city.xi1)
+points(10,atlantic.city.10$mu.sigma.xi[6], pch = 2, cex = 1.5)
+points(20,atlantic.city.20$mu.sigma.xi[6], pch = 2, cex = 1.5)
+points(30,atlantic.city.30$mu.sigma.xi[6], pch = 2, cex = 1.5)
+points(40,atlantic.city.40$mu.sigma.xi[6], pch = 2, cex = 1.5)
+points(50,atlantic.city.50$mu.sigma.xi[6], pch = 2, cex = 1.5)
+points(60,atlantic.city.60$mu.sigma.xi[6], pch = 2, cex = 1.5)
+points(70, atlantic.city.70$mu.sigma.xi[6],pch = 2, cex = 1.5)
+points(80, atlantic.city.80$mu.sigma.xi[6],pch = 2, cex = 1.5)
+points(90,atlantic.city.90$mu.sigma.xi[6], pch = 2, cex = 1.5)
+points(103,atlantic.city.all$mu.sigma.xi[6], pch = 2, cex = 1.5)
+
+#portland 
+portland.xi1 <- c(portland.10$mu.sigma.xi[6], 
+                  portland.20$mu.sigma.xi[6],
+                  portland.30$mu.sigma.xi[6], 
+                  portland.40$mu.sigma.xi[6],
+                  portland.50$mu.sigma.xi[6],
+                  portland.60$mu.sigma.xi[6],
+                  portland.70$mu.sigma.xi[6],
+                  portland.80$mu.sigma.xi[6], 
+                  portland.90$mu.sigma.xi[6], 
+                  portland.all$mu.sigma.xi[6])
+lines(portland.years, portland.xi1)
+points(10,portland.10$mu.sigma.xi[6], pch = 3, cex = 1.5)
+points(20,portland.20$mu.sigma.xi[6], pch = 3, cex = 1.5)
+points(30,portland.30$mu.sigma.xi[6], pch = 3, cex = 1.5)
+points(40,portland.40$mu.sigma.xi[6], pch = 3, cex = 1.5)
+points(50, portland.50$mu.sigma.xi[6], pch = 3, cex = 1.5)
+points(60,portland.60$mu.sigma.xi[6], pch = 3, cex = 1.5)
+points(70,portland.70$mu.sigma.xi[6], pch = 3, cex = 1.5)
+points(80,portland.80$mu.sigma.xi[6], pch = 3, cex = 1.5)
+points(90,portland.90$mu.sigma.xi[6], pch = 3, cex = 1.5)
+points(105,portland.all$mu.sigma.xi[6], pch = 3, cex = 1.5)
+#-----------------------------------------------------------------------------
