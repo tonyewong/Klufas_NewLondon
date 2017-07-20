@@ -1,5 +1,4 @@
 
-<<<<<<< HEAD
 
 setwd('~/codes/Klufas_NewLondon/R/')
 
@@ -10,8 +9,7 @@ setwd('~/codes/Klufas_NewLondon/R/')
 source('read_tide_data.R')
 tide.data <- read.tide.data()
 
-=======
->>>>>>> 549c64b859e708cff09a5842fa6597b08beb7ec9
+
 #setwd('~/codes/Klufas_NewLondon/R/')
 #source('gev_fitting_MCMC.R')
 
@@ -140,26 +138,24 @@ log.like.pri.nonstat<- function(p, parnames, min, max, temps){
       mu1 <- p[2]
       sigma <- p[3]
       xi <- p[4]
-<<<<<<< HEAD
-      
+
       p.mu0    <-  dunif(x= mu0, min = 0, max = 3000, log = TRUE)
       p.mu1    <-  dunif(x= mu1, min = -500, max = 500, log = TRUE)
       p.sigma  <-  dunif(x = sigma, min = 0, max = 400, log = TRUE)
       p.xi     <-  dunif(x = xi, min = -10, max = 10, log = TRUE) 
       
       lpri <- p.mu0 + p.mu1 + p.sigma + p.xi
-=======
+
 
       mu <-mu0 + mu1*temps
       #print(mu)
->>>>>>> 549c64b859e708cff09a5842fa6597b08beb7ec9
+
     }
     else if (parnames[2] == 'sigma0'){
       mu <- p[1]
       sigma0 <- p[2]
       sigma1 <- p[3]
       xi <- p[4]
-<<<<<<< HEAD
       
       p.mu <-  dunif( x= mu, min = 0, max = 3000, log = TRUE)
       p.sigma0 <- dunif(x =sigma0, min = -300, max = 300, log = TRUE)
@@ -167,17 +163,17 @@ log.like.pri.nonstat<- function(p, parnames, min, max, temps){
       p.xi <- dunif(x = xi, min = -10, max = 10, log = TRUE) 
 
       lpri <- p.mu + p.sigma0 + p.sigma1 + p.xi
-=======
+
 
       sigma <- exp(sigma0+ sigma1*temps)
->>>>>>> 549c64b859e708cff09a5842fa6597b08beb7ec9
+
     }
     else{
       mu <- p[1]
       sigma <- p[2]
       xi0 <- p[3]
       xi1 <- p[4]
-<<<<<<< HEAD
+
       
       p.mu <-  dunif( x= mu, min = 0, max = 3000, log = TRUE)
       p.sigma <- dunif(x = sigma, min = 0, max = 1000, log = TRUE)
@@ -185,10 +181,10 @@ log.like.pri.nonstat<- function(p, parnames, min, max, temps){
       p.xi1 <- dunif(x=xi1, min = -10, max = 10, log = TRUE) 
       
       lpri <- p.mu + p.sigma + p.xi0 + p.xi1
-=======
+
 
       xi <- xi0 + xi1*temps
->>>>>>> 549c64b859e708cff09a5842fa6597b08beb7ec9
+
     }
   }
 
@@ -200,7 +196,6 @@ log.like.pri.nonstat<- function(p, parnames, min, max, temps){
       sigma0 <- p[3]
       sigma1 <- p[4]
       xi <- p[5]
-<<<<<<< HEAD
       
       p.mu0 <-  dunif( x= mu0, min = 0, max = 3000, log = TRUE)
       p.mu1 <- dunif(x=mu1, min = -500, max = 500, log = TRUE)
@@ -210,11 +205,11 @@ log.like.pri.nonstat<- function(p, parnames, min, max, temps){
       
       lpri <- p.mu0 + p.mu1 + p.sigma0 + sigma1 + p.xi
       
-=======
+
       print('here')
       mu <- mu0 + mu1*temps
       sigma <- exp(sigma0 + sigma1*temps)
->>>>>>> 549c64b859e708cff09a5842fa6597b08beb7ec9
+
     }
     else if(parnames[2] == 'sigma0' & parnames[4] == 'xi0'){
       mu <- p[1]
@@ -222,21 +217,18 @@ log.like.pri.nonstat<- function(p, parnames, min, max, temps){
       sigma1 <- p[3]
       xi0 <- p[4]
       xi1 <- p[5]
-<<<<<<< HEAD
+
       
       p.mu <-  dunif( x= mu, min = 0, max = 3000, log = TRUE)
       p.sigma0 <- dunif(x = sigma0 , min = -100, max = 100, log = TRUE)
-      p.simga1 <- dunif(x = sigma1, min = -150 , max = 150, log = TRUE)
+      p.sigma1 <- dunif(x = sigma1, min = -150 , max = 150, log = TRUE)
       p.xi0 <- dunif(x = xi0, min= -10, max = 10, log = TRUE)
       p.xi1 <- dunif( x = xi1, min = -10, max = 10, log = TRUE)
       
       lpri <- p.mu + p.sigma0 +p.sigma1 + p.xi0 +p.xi1
-=======
-      print('here')
-      sigma <- exp(sigma0 + sigma1*temps)
-      xi <- xi0 + xi1*temps
+      #print('here')
 
->>>>>>> 549c64b859e708cff09a5842fa6597b08beb7ec9
+
     }
     else{
       mu0 <- p[1]
@@ -266,7 +258,7 @@ log.like.pri.nonstat<- function(p, parnames, min, max, temps){
     sigma1 <- p[4]
     xi0 <- p[5]
     xi1 <- p[6]
-<<<<<<< HEAD
+
     
     p.mu0 <-  dunif( x= mu0, min = 0, max = 3000, log = TRUE)
     p.mu1 <-  dunif( x=mu1, min = -500, max = 500, log = TRUE)
@@ -279,18 +271,7 @@ log.like.pri.nonstat<- function(p, parnames, min, max, temps){
 
   }
   
- 
-  #p.mu <- sum(dunif(x=mu, min= 0, max=3000, log = TRUE))
-=======
 
-    mu <- mu0 + mu1*temps # I think it is freaking out because it doesn't know what temperature to use here well....
-    #print(mu)
-    sigma <- exp(sigma0 + sigma1*temps)
-    #print(sigma)
-    xi <- xi0 + xi1*temps
-    #print(xi)
-
-  }
 
 # TW -- ah-ha! So this is a spot where toruble might be brewing. The prior distributions should
 # be defined for the actual parameters, mu0, mu1, sigma0, sigma1, etc... and not only for
@@ -303,8 +284,8 @@ log.like.pri.nonstat<- function(p, parnames, min, max, temps){
 # use maybe a uniform prior centered at 0, something like [-something, +something] (again using
 # the MLE values you found for sigma1 as a guide for what a reasonable upper/lower bound is).
 
-  p.mu <- sum(dunif(x=mu, min= 0, max=3000, log = TRUE))
->>>>>>> 549c64b859e708cff09a5842fa6597b08beb7ec9
+  #p.mu <- sum(dunif(x=mu, min= 0, max=3000, log = TRUE))
+
   #print('here')
  # p.sigma <- sum(dunif(x=sigma, min= 0, max=3000, log = TRUE))
 
@@ -328,13 +309,13 @@ log.post.final2 <- function(p, parnames, data, min, max, temps){
     log.like.final <- (log.like + log.like.pri.nonstat)
   }
   else{
-<<<<<<< HEAD
+
     log.like.final <-log.like.pri.nonstat 
     #print('here3')
-=======
+
     log.like.final <-log.like.pri.nonstat
     print('here3')
->>>>>>> 549c64b859e708cff09a5842fa6597b08beb7ec9
+
   }
 
   return(log.like.final)

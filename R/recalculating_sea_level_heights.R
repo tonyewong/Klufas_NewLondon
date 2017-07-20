@@ -48,6 +48,44 @@ for (tt in 1:n.years) {
   lsl.max2[tt] <- max(fit$residuals[ind.thisyear]) 
 }
 
+
+#READ PREDICTED TIDE DATA----------------------------------------
+
+dat.dir <- './predicted_data/'
+filetype <- 'csv'
+septype <- ''
+
+setwd('~/codes/Klufas_NewLondon/')
+
+files.tg <- list.files(path=dat.dir,pattern=filetype)
+data.pred <- read.csv(paste(dat.dir,files.tg[1],sep=''), header=TRUE, sep=septype)
+if(length(files.tg) > 1) {
+  for (ff in 2:length(files.tg)) {
+    data.pred <- rbind(data.pred, read.table(paste(dat.dir,files.tg[ff],sep=''), header = TRUE, sep=septype))
+  }
+}
+colnames(data.pred) <- c('Date', 'Day', 'Time', 'Height', 'L/H')
+
+dates <- as.Date(as.character(data.pred$Date), format = '%Y/%m/%d')
+data.pred$Year <- format(dates, '%Y')
+years.pred <- data.pred$Year
+years.unique.pred  <- unique(years.pred)
+n.years.pred       <- length(years.unique.pred) 
+lsl.mean.pred      <- rep(0,length(n.years.pred))
+lsl.max.pred       <- rep(0,length(n.years.pred))
+data$lsl.norm.pred<- rep(NA,length(n.years.pred))
+lsl.max.pred      <- rep(0, length(n.years.pred))
+
+for (tt in 1:n.years.pred) {
+  ind.thisyear <- which(years.pred==years.unique.pred[tt])
+  lsl.mean.pred[tt] <- mean(data.pred$Height[ind.thisyear])
+  data$lsl.norm.pred[ind.thisyear] <- data.pred$Height[ind.thisyear] - lsl.mean.pred[tt]
+  lsl.max.pred[tt] <- max(data$lsl.norm.pred[ind.thisyear]) *1000 #need to convert into mm 
+  #lsl.max2[tt] <- max(fit$residuals[ind.thisyear]) *1000
+}
+
+
+#----------------------------------------------------------------
 #water level anomaly = verified water level measurement - [sea level trend(date - date 
 #zero SLR)] - predicted water level measurement 
 
@@ -73,10 +111,10 @@ for (i in 1:n.years){
   data$lsl.norm[ind.thisyear] <- data$Sea_Level[ind.thisyear] - lsl.mean[i]
   lsl.max[i] <- max(data$lsl.norm[ind.thisyear])
   lsl.max2[i] <- max(fit$residuals[ind.thisyear]) 
-  WLA[i] <- lsl.max[i] - SLTi*(i-44) - 400
+  WLA[i] <- lsl.max[i] - SLTi*(i-44) - 400 - lsl.max.pred[i]
 }
 
-#fit <- lm(data$Sea_Level ~ c(1:length(data$Sea_Level)))
+fit <- lm(WLA ~ c(1:length(WLA)))
 #plot(years, data$SeaLevel)
 
 months <- data$Month

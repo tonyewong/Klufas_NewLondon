@@ -145,14 +145,15 @@ all.p.names <- list(c('mu', 'sigma', 'xi'),
 
 other.p.names <- c('stat', 'mu','sigma', 'xi', 'mu.sigma', 'sigma.xi', 'mu.xi', 'mu.sigma.xi')
 city.names <- c('atlantic.city', 'boston', 'chesapeake.bay', 'lewes', 'new.york.city', 'portland', 'duck.pier', 'montauk', 'newport','charleston')
+tmp <- c('stat2', 'mu2','sigma2', 'xi2', 'mu.sigma2', 'sigma.xi2', 'mu.xi2', 'mu.sigma.xi2')
 optim.gev.fit <- vector('list' , 10)
 names(optim.gev.fit) <- city.names
 lower.bound <- list(c(0,0,-5),
-                 c(0,0, 0, -5),
+                 c(0,-100, 0, -5),
                  c(0, 0, 0, -200),
                  c(0, 0, -5, -5), 
-                 c(0,-100, 0, 0, -5),
-                 c(0, -100, 0, -1, -1),
+                 c(0,-100, -100, -100, -5),
+                 c(0, -100, -100, -1, -1),
                  c(0, -100, 0, -1, -10),
                  c(0,-100, 0, -100, -1, -1)
                  )
@@ -170,6 +171,7 @@ get.prior.estimates <- function(city, city.temps){
   #for (i in 1:2){
   
     sublist <- vector('list', 8)
+    sublist2 <- vector('list', 8)
     names(sublist) <- other.p.names
      for (j in 1: length(all.p.names)){
       print(j)
@@ -180,9 +182,14 @@ get.prior.estimates <- function(city, city.temps){
                                   temps = city.temps$values, 
                                   parnames = all.p.names[[j]])
         sublist[[other.p.names[j]]] <- optim.like$optim$bestmem
+        sublist2[[tmp[j]]] <- optim.like$member$bestmemit
     }
     #optim.gev.fit$city.names[i] <- sublist
-  return(sublist)
+    double.list <- vector('list', 2)
+    names(double.list) <- c('sublist', 'sublist2')
+    double.list$sublist <- sublist
+    double.list$sublist2 <- sublist2
+  return(double.list)
   }
 
 setwd('~/codes/Klufas_NewLondon/R/')
@@ -198,6 +205,10 @@ new.york.city.temps <- read.temp.data(1920, 2014)
 portland.temps <- read.temp.data(1910, 2014)
 duck.pier.temps <- read.temp.data(1978, 2017)
 newport.temps <- read.temp.data(1910, 2014)
+
+boston.priors.2 <- get.prior.estimates(boston, boston.temps)
+portland.priors.2 <- get.prior.estimates(portland,portland.temps)
+save.image('priors.run2.RData')
 
 boston.priors <- get.prior.estimates(boston, boston.temps)
 atlantic.city.priors <- get.prior.estimates(atlantic.city, atlantic.city.temps)
@@ -253,12 +264,31 @@ xi.all.stat <-c(boston.priors$stat[3],
                 portland.priors$stat[3], 
                 duck.pier.priors$stat[3], 
                 newport.priors$stat[3]) 
+#install.packages('MASS')
+library(MASS)
+#fitdistr(mu.all.stat, 'gamma')
+par(mfrow = c(1,3), oma = c(4,2,4,0))
 
-par(mfrow = c(1,3))
-hist(mu.all.stat, freq = FALSE)
-hist(sigma.all.stat, freq = FALSE)
-hist(xi.all.stat, freq = FALSE)
+hist(mu.all.stat, freq = FALSE, main = '', xlab = expression(mu), ylab = '', cex.lab = 2)
+mu.gamma <- fitdistr(mu.all.stat, 'gamma')
+mu.seq <- seq(from = min (mu.all.stat) - 200, to = max(mu.all.stat) + 200, by = 1)
+lines(mu.seq, dgamma(mu.seq, shape = mu.gamma$estimate[1], rate = mu.gamma$estimate[2]), col = 'red')
 
+hist(sigma.all.stat, freq = FALSE, main='', xlab = expression(sigma), ylab = '', cex.lab = 2)
+sigma.gamma <- fitdistr(sigma.all.stat, 'gamma')
+seq.sigma <- seq(from = min(sigma.all.stat)-20, to = max(sigma.all.stat)+20, by =1)
+lines( seq.sigma, dgamma(seq.sigma, shape = sigma.gamma$estimate[1], rate = sigma.gamma$estimate[2] ), col = 'red') 
+
+hist(xi.all.stat, freq = FALSE, main ='', xlab = expression(xi), ylab = '' ,cex.lab = 2)
+sd <- sd(xi.all.stat)
+mean <- mean(xi.all.stat)
+seq.xi <- seq(from =min(xi.all.stat) - .1, to =max(xi.all.stat) + .1, by = .01)
+lines(seq.xi, dnorm(seq.xi, mean = mean, sd = sd), col = 'red')
+
+par(oma = c(3,2,3,0))
+mtext(text = 'Density', side = 2, outer = TRUE)
+mtext(text = 'Parameter Values', side = 1, outer = TRUE)
+title('Distribution of Stationary Parameters of Different Tide Stations', outer = TRUE)
 
 mu0.mu.nonstat <- c(boston.priors$mu[1], 
                  atlantic.city.priors$mu[1], 
@@ -305,11 +335,33 @@ xi.mu.nonstat <- c(boston.priors$mu[4],
                    newport.priors$mu[4])
 
 par(mfrow = c(2,2))
-hist(mu0.mu.nonstat, freq= FALSE) 
-hist(mu1.mu.nonstat, freq= FALSE)
-hist(sigma.mu.nonstat, freq= FALSE)
-hist(xi.mu.nonstat, freq= FALSE)
+par(oma = c(3,3,3,3))
+hist(mu0.mu.nonstat, freq= FALSE, main = '', xlab = expression(mu[0]), ylab = '', cex.lab = 1.5) 
+mu0.gamma <- fitdistr(mu0.mu.nonstat, 'gamma')
+mu0.seq <- seq(from = min (mu0.mu.nonstat) - 500, to = max(mu0.mu.nonstat) + 300, by = 1)
+lines(mu0.seq, dgamma(mu0.seq, shape = mu0.gamma$estimate[1], rate = mu0.gamma$estimate[2]), col = 'red')
 
+hist(mu1.mu.nonstat, freq= FALSE, main = '', xlab = expression(mu[1]), ylab = '', cex.lab = 1.5)
+sd <- sd(mu1.mu.nonstat)
+mean <- mean(mu1.mu.nonstat)
+mu1.seq <- seq(from = min (mu1.mu.nonstat) - 100, to = max(mu1.mu.nonstat) + 300, by = 1)
+lines(mu1.seq, dnorm(mu1.seq, mean = mean, sd = sd), col = 'red')
+
+hist(sigma.mu.nonstat, freq= FALSE, main = '', xlab = expression(sigma), ylab = '', cex.lab = 1.5)
+sigma.gamma <- fitdistr(sigma.mu.nonstat, 'gamma')
+sigma.seq <- seq(from = min (sigma.mu.nonstat) - 20, to = max(sigma.mu.nonstat) + 300, by = 1)
+lines(sigma.seq, dgamma(sigma.seq, shape = sigma.gamma$estimate[1], rate = sigma.gamma$estimate[2]), col = 'red')
+
+hist(xi.mu.nonstat, freq= FALSE, main = '', xlab = expression(xi), ylab = '', cex.lab = 1.5)
+sd <- sd(xi.mu.nonstat)
+mean <- mean(xi.mu.nonstat)
+seq.xi <- seq(from =min(xi.mu.nonstat) - .1, to =max(xi.mu.nonstat) + .1, by = .01)
+lines(seq.xi, dnorm(seq.xi, mean = mean, sd = sd), col = 'red')
+
+par(oma = c(3,3,3,0))
+title('Distribution of Parameters of Different Tide Stations With Mu Non-Stationary', outer = TRUE)
+mtext(text = 'Parameter Values', side = 1, outer = TRUE)
+mtext(text = 'Density', side = 2, outer = TRUE)
 
 mu0.all.nonstat <- c(boston.priors$mu.sigma.xi[1], 
                     atlantic.city.priors$mu.sigma.xi[1], 
@@ -395,3 +447,204 @@ dist <- fitdistr(mu1.all.nonstat, 'normal')
 plot(dist)
 
 save.image('east.coast.RData')
+
+mu0.mu.sig.nonstat <- c(boston.priors$mu.sigma[1], 
+                       atlantic.city.priors$mu.sigma[1], 
+                       charleston.priors$mu.sigma[1],
+                       montauk.priors$mu.sigma[1], 
+                       chesapeake.bay.priors$mu.sigma[1], 
+                       lewes.priors$mu.sigma[1], 
+                       new.york.city.priors$mu.sigma[1], 
+                       portland.priors$mu.sigma[1], 
+                       duck.pier.priors$mu.sigma[1], 
+                       newport.priors$mu.sigma[1])
+
+mu1.mu.sig.nonstat <- c(boston.priors$mu.sigma[2], 
+                        atlantic.city.priors$mu.sigma[2], 
+                        charleston.priors$mu.sigma[2],
+                        montauk.priors$mu.sigma[2], 
+                        chesapeake.bay.priors$mu.sigma[2], 
+                        lewes.priors$mu.sigma[2], 
+                        new.york.city.priors$mu.sigma[2], 
+                        portland.priors$mu.sigma[2], 
+                        duck.pier.priors$mu.sigma[2], 
+                        newport.priors$mu.sigma[2])
+
+sig0.mu.sig.nonstat <- c(boston.priors$mu.sigma[3], 
+                         atlantic.city.priors$mu.sigma[3], 
+                         charleston.priors$mu.sigma[3],
+                         montauk.priors$mu.sigma[3], 
+                         chesapeake.bay.priors$mu.sigma[3], 
+                         lewes.priors$mu.sigma[3], 
+                         new.york.city.priors$mu.sigma[3], 
+                         portland.priors$mu.sigma[3], 
+                         duck.pier.priors$mu.sigma[3], 
+                         newport.priors$mu.sigma[3])
+
+sig1.mu.sig.nonstat <- c(boston.priors$mu.sigma[4], 
+                         atlantic.city.priors$mu.sigma[4], 
+                         charleston.priors$mu.sigma[4],
+                         montauk.priors$mu.sigma[4], 
+                         chesapeake.bay.priors$mu.sigma[4], 
+                         lewes.priors$mu.sigma[4], 
+                         new.york.city.priors$mu.sigma[4], 
+                         portland.priors$mu.sigma[4], 
+                         duck.pier.priors$mu.sigma[4], 
+                         newport.priors$mu.sigma[4])
+
+xi0.mu.sig.nonstat <- c(boston.priors$mu.sigma[5], 
+                        atlantic.city.priors$mu.sigma[5], 
+                        charleston.priors$mu.sigma[5],
+                        montauk.priors$mu.sigma[5], 
+                        chesapeake.bay.priors$mu.sigma[5], 
+                        lewes.priors$mu.sigma[5], 
+                        new.york.city.priors$mu.sigma[5], 
+                        portland.priors$mu.sigma[5], 
+                        duck.pier.priors$mu.sigma[5], 
+                        newport.priors$mu.sigma[5])
+#MEGA FIGURE----------------------------------------------
+row1 <- c(1, 2, 3, 4, 5, 6)
+row2 <- c(7, 8,9,10,11,12)
+row3 <- c(13,14,15,16,17,18)
+row4 <- c(19,20,21,22,23,24)
+
+c<- rbind(row1, row2, row3, row4)
+layout (c)
+par(mar = c(.25,.25,.25,.25), oma = c(3,10,3,1))
+
+#Stationary------------------------------------
+par(mar = c(.25,.25,2,.25))
+hist(mu.all.stat, freq = FALSE, main = expression(mu[0]), xlab = '', ylab = '', cex.lab = 2, 
+     yaxt = 'n',  cex.main = 1.5, xlim = c(500,3000))
+#title(expresion(mu[0]))
+mu.gamma <- fitdistr(mu.all.stat, 'gamma')
+mu.seq <- seq(from = min (mu.all.stat) - 500, to = max(mu.all.stat) + 700, by = 1)
+lines(mu.seq, dgamma(mu.seq, shape = mu.gamma$estimate[1], rate = mu.gamma$estimate[2]), col = 'red')
+mtext(text ='All Stationary  ', side = 2, cex = .75, las = 1)
+
+plot.new()
+mtext(text = expression(mu[1]), line = .5)
+
+hist(sigma.all.stat, freq = FALSE, main=expression(sigma[0]), xlab = expression(sigma), 
+     ylab = '', cex.lab = 2, yaxt = 'n', cex.main = 1.5, xlim = c(0, 900))
+sigma.gamma <- fitdistr(sigma.all.stat, 'gamma')
+seq.sigma <- seq(from = min(sigma.all.stat)-200, to = max(sigma.all.stat)+700, by =1)
+lines( seq.sigma, dgamma(seq.sigma, shape = sigma.gamma$estimate[1], rate = sigma.gamma$estimate[2] ), col = 'red') 
+
+plot.new()
+mtext(text = expression(sigma[1]), line = .5)
+
+hist(xi.all.stat, freq = FALSE, main =expression(xi[0]), xlab = expression(xi), 
+     ylab = '' ,cex.lab = 2, yaxt = 'n', cex.main = 1.5, xlim = c(-5, 2))
+sd <- sd(xi.all.stat)
+mean <- mean(xi.all.stat)
+seq.xi <- seq(from =min(xi.all.stat) - 5, to =max(xi.all.stat) + 2, by = .01)
+lines(seq.xi, dnorm(seq.xi, mean = mean, sd = sd), col = 'red')
+
+
+plot.new()
+mtext(text = expression(xi[1]), line = .5)
+#Mu NOn Stationary------------------------------------ 
+hist(mu0.mu.nonstat, freq= FALSE, main = '', xlab = expression(mu[0]), ylab = '', cex.lab = 1.5, 
+     yaxt = 'n',  xlim = c(500,3000)) 
+mu0.gamma <- fitdistr(mu0.mu.nonstat, 'gamma')
+mu0.seq <- seq(from = min (mu0.mu.nonstat) - 500, to = max(mu0.mu.nonstat) + 700, by = 1)
+lines(mu0.seq, dgamma(mu0.seq, shape = mu0.gamma$estimate[1], rate = mu0.gamma$estimate[2]), col = 'red')
+mtext(text ='Mu Non-Stationary  ', side = 2, cex = .75, las = 1)
+
+hist(mu1.mu.nonstat, freq= FALSE, main = '', xlab = expression(mu[1]), ylab = '', cex.lab = 1.5, 
+     yaxt = 'n', xlim = c(-200, 1000))
+sd <- sd(mu1.mu.nonstat)
+mean <- mean(mu1.mu.nonstat)
+mu1.seq <- seq(from = min (mu1.mu.nonstat) - 200, to = max(mu1.mu.nonstat) + 300, by = 1)
+lines(mu1.seq, dnorm(mu1.seq, mean = mean, sd = sd), col = 'red')
+
+hist(sigma.mu.nonstat, freq= FALSE, main = '', xlab = expression(sigma), ylab = '', cex.lab = 1.5, 
+     yaxt = 'n', xlim = c(0, 900))
+sigma.gamma <- fitdistr(sigma.mu.nonstat, 'gamma')
+sigma.seq <- seq(from = min (sigma.mu.nonstat) - 100, to = max(sigma.mu.nonstat) + 300, by = 1)
+lines(sigma.seq, dgamma(sigma.seq, shape = sigma.gamma$estimate[1], rate = sigma.gamma$estimate[2]), col = 'red')
+
+plot.new()
+
+hist(xi.mu.nonstat, freq= FALSE, main = '', xlab = expression(xi), ylab = '', cex.lab = 1.5, yaxt = 'n',
+     xlim = c(-5, 2))
+sd <- sd(xi.mu.nonstat)
+mean <- mean(xi.mu.nonstat)
+seq.xi <- seq(from =min(xi.mu.nonstat) - 1, to =max(xi.mu.nonstat) + 1, by = .01)
+lines(seq.xi, dnorm(seq.xi, mean = mean, sd = sd), col = 'red')
+
+plot.new()
+
+#------------------------------------ 
+#mu, Sig, Non Stationary ------------------------ 
+hist(mu0.mu.sig.nonstat, freq = FALSE, main = '', yaxt = 'n', xlim = c(500,3000))
+mu0.gamma <- fitdistr(mu0.mu.sig.nonstat, 'gamma')
+mu0.seq <- seq(from = min (mu0.mu.sig.nonstat) - 500, to = max(mu0.mu.sig.nonstat) + 300, by = 1)
+lines(mu0.seq, dgamma(mu0.seq, shape = mu0.gamma$estimate[1], rate = mu0.gamma$estimate[2]), col = 'red')
+mtext(text ='Mu, Sigma  \nNon-Stationary  ', side = 2, cex = .75, las = 1)
+
+hist(mu1.mu.sig.nonstat, freq = FALSE, main = '', yaxt = 'n', xlim = c(-200, 1000))
+mean <- mean(mu1.mu.sig.nonstat)
+sd <- sd(mu1.mu.sig.nonstat)
+mu1.seq <- seq(from = min (mu1.mu.sig.nonstat)- 150, to = max(mu1.mu.sig.nonstat)+900, by = 1 )
+lines(mu1.seq, dnorm(mu1.seq, mean = mean, sd = sd), col = 'red')
+
+hist(sig0.mu.sig.nonstat, freq = FALSE, main = '', yaxt = 'n', xlim = c(0, 900))
+sig0.gamma <- fitdistr(sig0.mu.sig.nonstat, 'gamma')
+sig0.seq <- seq(from = min (sig0.mu.sig.nonstat) - 100, to = max(sig0.mu.sig.nonstat) + 300, by = 1)
+lines(sig0.seq, dgamma(sig0.seq, shape = sig0.gamma$estimate[1], rate = sig0.gamma$estimate[2]), col = 'red')
+
+hist(sig1.mu.sig.nonstat, freq = FALSE, main = '', yaxt = 'n', xlim = c(-50, 10))
+mean <- mean(sig1.mu.sig.nonstat)
+sd <- sd(sig1.mu.sig.nonstat)
+sig1.seq <- seq(from = min(sig1.mu.sig.nonstat) - 10, to = max(sig1.mu.sig.nonstat) + 20, by = 1)
+lines(sig1.seq, dnorm(sig1.seq, mean = mean, sd = sd), col = 'red')
+
+hist(xi0.mu.sig.nonstat, freq = FALSE, main = '', yaxt = 'n', xlim = c(-5, 2))
+mean <- mean(xi0.mu.sig.nonstat)
+sd <- sd(xi0.mu.sig.nonstat)
+xi0.seq <- seq(from = min (xi0.mu.sig.nonstat) - 2, to = max(xi0.mu.sig.nonstat) + .5, by = .05)
+lines(xi0.seq, dnorm (xi0.seq , mean = mean, sd = sd), col = 'red')
+
+plot.new()
+
+#------------------------------------
+#All Non Stationary ------------------ 
+hist(mu0.all.nonstat, freq= FALSE, main = '', yaxt = 'n', xlim = c(500,3000)) 
+mu0.gamma <- fitdistr(mu0.mu.nonstat, 'gamma')
+mu0.seq <- seq(from = min (mu0.mu.nonstat) - 500, to = max(mu0.mu.nonstat) + 500, by = 1)
+lines(mu0.seq, dgamma(mu0.seq, shape = mu0.gamma$estimate[1], rate = mu0.gamma$estimate[2]), col = 'red')
+mtext(text ='All Non-Stationary', side = 2, cex = .75, las = 1)
+
+hist(mu1.all.nonstat, freq= FALSE, main = '', yaxt = 'n',xlim = c(-200, 1000))
+mean <- mean(mu1.all.nonstat)
+sd <- sd(mu1.all.nonstat)
+mu1.all.nonstat.seq <- seq(from = min(mu1.all.nonstat) -150, to = max(mu1.all.nonstat) + 900 , by = 1)
+lines(mu1.all.nonstat.seq, dnorm(mu1.all.nonstat.seq, mean = mean, sd = sd), col = 'red')
+
+hist(sigma0.all.nonstat, freq= FALSE, main = '', yaxt = 'n', xlim = c(0, 900))
+sigma0.gamma <- fitdistr(sigma0.all.nonstat, 'gamma')
+sigma0.seq <- seq(from = min (sigma0.all.nonstat) - 30, to = max(sigma0.all.nonstat) + 900, by = .05)
+lines(sigma0.seq, dgamma(sigma0.seq, shape = sigma0.gamma$estimate[1], rate = sigma0.gamma$estimate[2]), col = 'red')
+
+hist(sigma1.all.nonstat, freq= FALSE, main = '', yaxt = 'n',xlim = c(-50, 10))
+mean <- mean(sigma1.all.nonstat)
+sd <- sd(sigma1.all.nonstat)
+sigma1.seq <- seq(from = min (sigma1.all.nonstat) - 50, to = max(sigma1.all.nonstat) + 10, by = .05)
+lines(sigma1.seq, dnorm(sigma1.seq, mean = mean, sd = sd), col = 'red')
+
+hist(xi0.all.nonstat, freq= FALSE, main = '', yaxt = 'n', xlim = c(-5, 2))
+mean <- mean(xi0.all.nonstat)
+sd <- sd(xi0.all.nonstat)
+xi0.seq <- seq(from = min(xi0.all.nonstat) - 5, to = max(xi0.all.nonstat) + 3, by = .05)
+lines(xi0.seq, dnorm(xi0.seq, mean = mean, sd = sd), col = 'red')
+
+hist(xi1.all.nonstat, freq= FALSE, main = '', yaxt = 'n')
+mean <- mean(xi1.all.nonstat)
+sd <- sd(xi1.all.nonstat)
+xi1.seq <- seq(from = min (xi1.all.nonstat) - .2, to = max(xi1.all.nonstat) + .2, by = .05)
+lines(xi1.seq, dnorm(xi1.seq, mean = mean, sd = sd), col = 'red')
+
+mtext(text = 'MLE Distributions of GEV Parameters of Different Tide Stations', outer = TRUE)
+#------------------------------------

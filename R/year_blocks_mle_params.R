@@ -15,13 +15,28 @@ setwd('~/codes/Klufas_NewLondon/R/')
 source('optimization_sf.R')
 #library(ismev)
 #library(zoo)
+city.list.data <- list( boston,  portland )
 
+all.p.names <- list(c('mu', 'sigma', 'xi'), 
+                    c('mu0', 'mu1', 'sigma', 'xi'),
+                    c('mu', 'sigma0', 'sigma1', 'xi'),
+                    c('mu', 'sigma', 'xi0', 'xi1'),
+                    c('mu0', 'mu1', 'sigma0', 'sigma1' , 'xi'),
+                    c('mu', 'sigma0', 'sigma1' , 'xi0', 'xi1'),
+                    c('mu0', 'mu1', 'sigma', 'xi0', 'xi1'),
+                    c('mu0', 'mu1', 'sigma0', 'sigma1' , 'xi0', 'xi1'))
+
+other.p.names <- c('stat', 'mu','sigma', 'xi', 'mu.sigma', 'sigma.xi', 'mu.xi', 'mu.sigma.xi')
+city.names <- c('boston', 'portland')
+tmp <- c('stat2', 'mu2','sigma2', 'xi2', 'mu.sigma2', 'sigma.xi2', 'mu.xi2', 'mu.sigma.xi2')
+optim.gev.fit <- vector('list' , 2)
+names(optim.gev.fit) <- city.names
 lower.bound <- list(c(0,0,-5),
                     c(0,-100, 0, -5),
                     c(0, 0, 0, -200),
                     c(0, 0, -5, -5), 
-                    c(0,-100, 0, 0, -5),
-                    c(0, -100, 0, -1, -1),
+                    c(0,-100, -100, -100, -5),
+                    c(0, -100, -100, -1, -1),
                     c(0, -100, 0, -1, -10),
                     c(0,-100, 0, -100, -1, -1)
 )
@@ -35,23 +50,31 @@ upper.bound <- list(c(3000,3000,5),
                     c(3000,100, 1000, 10 , 1, 1)
 )
 
-get.prior.estimates <- function(max.data.clipped, city.temps){
+
+
+get.prior.estimates <- function(city, city.temps){
   #for (i in 1:2){
   
   sublist <- vector('list', 8)
+  sublist2 <- vector('list', 8)
   names(sublist) <- other.p.names
   for (j in 1: length(all.p.names)){
-    #print(j)
+    print(j)
     optim.like <- DEoptim(neg.log.like.calc,
                           lower=lower.bound[[j]], 
                           upper=upper.bound[[j]], 
-                          data = max.data.clipped, 
+                          data = city, 
                           temps = city.temps, 
                           parnames = all.p.names[[j]])
     sublist[[other.p.names[j]]] <- optim.like$optim$bestmem
+    sublist2[[tmp[j]]] <- optim.like$member$bestmemit
   }
   #optim.gev.fit$city.names[i] <- sublist
-  return(sublist)
+  double.list <- vector('list', 2)
+  names(double.list) <- c('sublist', 'sublist2')
+  double.list$sublist <- sublist
+  double.list$sublist2 <- sublist2
+  return(double.list)
 }
 #New London Plots-----------------------------------------------------------------------------------
 new.london.30 <- get.prior.estimates(tide.data$max[46:76], temps$values[46:76])
@@ -142,6 +165,7 @@ new.london.40 <- get.prior.estimates(tide.data$max[36:76], temps$values[36:76])
 new.london.50 <- get.prior.estimates(tide.data$max[26:76], temps$values[26:76])
 new.london.60 <- get.prior.estimates(tide.data$max[16:76], temps$values[16:76])
 new.london.all <- get.prior.estimates(tide.data$max, temps$values)
+save.image('nl.re.run.RData')
 
 boston.10 <- get.prior.estimates(boston$max[84:94], boston.temps$values[84:94])
 boston.20 <- get.prior.estimates(boston$max[74:94], boston.temps$values[74:94])
@@ -948,3 +972,842 @@ points(80,portland.80$mu.sigma.xi[6], pch = 3, cex = 1.5)
 points(90,portland.90$mu.sigma.xi[6], pch = 3, cex = 1.5)
 points(105,portland.all$mu.sigma.xi[6], pch = 3, cex = 1.5)
 #-----------------------------------------------------------------------------
+
+#with 10 year plot segments--------------------------------------------------
+percent.param <- function(ind, city.year, city.all){
+  return(abs((city.year$mu.sigma.xi[ind] - city.all$mu.sigma.xi[ind]) / city.all$mu.sigma.xi[ind]))
+}
+
+percent.param.stat <- function(ind, city.year, city.all){
+  return(abs((city.year$stat[ind] - city.all$stat[ind]) / city.all$stat[ind]))
+}
+
+percent.param(1, new.london.10, new.london.all)  
+#GEV Stabalization ALl Non Stat  --------------------------------------------------
+par(mfrow = c(3,2))
+par(mar = c(0,4,2,1))
+#mu0
+#new london
+nl.years <- c(10,20,30,40,50,60,76)
+nl.mu0 <- c(percent.param(1, new.london.10, new.london.all)  ,
+            percent.param(1, new.london.20, new.london.all)  ,
+            percent.param(1, new.london.30, new.london.all)  ,
+            percent.param(1, new.london.40, new.london.all)  ,
+            percent.param(1, new.london.50, new.london.all)  ,
+            percent.param(1, new.london.60, new.london.all)  ,
+            percent.param(1, new.london.all, new.london.all))
+plot(nl.years, nl.mu0, type = 'l', xlim = c(0,110), ylim = c(-.01,.1), xaxt = 'n', ylab = 'mu0')
+points(10, percent.param(1, new.london.10, new.london.all), cex = 1.5)
+points(20, percent.param(1, new.london.20, new.london.all) , cex = 1.5)
+points(30, percent.param(1, new.london.30, new.london.all) , cex = 1.5)
+points(40, percent.param(1, new.london.40, new.london.all), cex = 1.5)
+points(50, percent.param(1, new.london.50, new.london.all), cex = 1.5)
+points(60, percent.param(1, new.london.60, new.london.all) , cex = 1.5)
+points(76, percent.param(1, new.london.all, new.london.all), cex = 1.5)
+
+#boston 
+bos.years <- c(10,20,30,40,50,60,70,80,94)
+bos.mu0 <- c(percent.param(1, boston.10, boston.all), 
+             percent.param(1, boston.20, boston.all), 
+             percent.param(1, boston.30, boston.all), 
+             percent.param(1, boston.40, boston.all) ,
+             percent.param(1, boston.50, boston.all), 
+             percent.param(1, boston.60, boston.all), 
+             percent.param(1, boston.70, boston.all), 
+             percent.param(1, boston.80, boston.all), 
+             percent.param(1, boston.all, boston.all))
+lines(bos.years, bos.mu0)
+points(10,percent.param(1, boston.10, boston.all), pch = 0, cex = 1.5)
+points(20,percent.param(1, boston.20, boston.all), pch = 0, cex = 1.5)
+points(30,percent.param(1, boston.30, boston.all), pch = 0, cex = 1.5)
+points(40,percent.param(1, boston.40, boston.all) , pch = 0, cex = 1.5)
+points(50, percent.param(1, boston.50, boston.all), pch = 0, cex = 1.5)
+points(60, percent.param(1, boston.60, boston.all), pch = 0, cex = 1.5)
+points(70,percent.param(1, boston.70, boston.all), pch = 0, cex = 1.5)
+points(80,percent.param(1, boston.80, boston.all), pch = 0, cex = 1.5)
+points(94, percent.param(1, boston.all, boston.all), pch = 0, cex = 1.5)
+
+#atlantic city 
+al.city.years <- c(10,20,30,40,50,60,70,80,90, 103)
+al.city.mu0 <- c(percent.param(1, atlantic.city.10, atlantic.city.all), 
+                 percent.param(1, atlantic.city.20, atlantic.city.all),
+                 percent.param(1, atlantic.city.30, atlantic.city.all),
+                 percent.param(1, atlantic.city.40, atlantic.city.all),
+                 percent.param(1, atlantic.city.50, atlantic.city.all),
+                 percent.param(1, atlantic.city.60, atlantic.city.all),
+                 percent.param(1, atlantic.city.70, atlantic.city.all),
+                 percent.param(1, atlantic.city.80, atlantic.city.all),
+                 percent.param(1, atlantic.city.90, atlantic.city.all),
+                 percent.param(1, atlantic.city.all, atlantic.city.all))
+lines(al.city.years, al.city.mu0)
+points(10,percent.param(1, atlantic.city.10, atlantic.city.all), pch = 2, cex = 1.5)
+points(20,percent.param(1, atlantic.city.20, atlantic.city.all), pch = 2, cex = 1.5)
+points(30,percent.param(1, atlantic.city.30, atlantic.city.all), pch = 2, cex = 1.5)
+points(40, percent.param(1, atlantic.city.40, atlantic.city.all), pch = 2, cex = 1.5)
+points(50,percent.param(1, atlantic.city.50, atlantic.city.all), pch = 2, cex = 1.5)
+points(60,percent.param(1, atlantic.city.60, atlantic.city.all), pch = 2, cex = 1.5)
+points(70, percent.param(1, atlantic.city.70, atlantic.city.all),pch = 2, cex = 1.5)
+points(80, percent.param(1, atlantic.city.80, atlantic.city.all),pch = 2, cex = 1.5)
+points(90,percent.param(1, atlantic.city.90, atlantic.city.all), pch = 2, cex = 1.5)
+points(103,percent.param(1, atlantic.city.all, atlantic.city.all), pch = 2, cex = 1.5)
+
+#portland 
+portland.years <- c(10,20,30,40,50,60,70,80,90, 105)
+portland.mu0 <- c(percent.param(1, portland.10, portland.all), 
+                  percent.param(1, portland.20, portland.all),
+                  percent.param(1, portland.30, portland.all), 
+                  percent.param(1, portland.40, portland.all),
+                  percent.param(1, portland.50, portland.all),
+                  percent.param(1, portland.60, portland.all),
+                  percent.param(1, portland.70, portland.all),
+                  percent.param(1, portland.80, portland.all), 
+                  percent.param(1, portland.90, portland.all), 
+                  percent.param(1, portland.all, portland.all))
+lines(portland.years, portland.mu0)
+points(10,percent.param(1, portland.10, portland.all), pch = 3, cex = 1.5)
+points(20,percent.param(1, portland.20, portland.all), pch = 3, cex = 1.5)
+points(30,percent.param(1, portland.30, portland.all), pch = 3, cex = 1.5)
+points(40,percent.param(1, portland.40, portland.all), pch = 3, cex = 1.5)
+points(50, percent.param(1, portland.50, portland.all), pch = 3, cex = 1.5)
+points(60,percent.param(1, portland.60, portland.all), pch = 3, cex = 1.5)
+points(70,percent.param(1, portland.70, portland.all), pch = 3, cex = 1.5)
+points(80,percent.param(1, portland.80, portland.all), pch = 3, cex = 1.5)
+points(90,percent.param(1, portland.90, portland.all), pch = 3, cex = 1.5)
+points(105,percent.param(1, portland.all, portland.all), pch = 3, cex = 1.5)
+
+#legend(30, 2000, legend= c('30 year', '45 year', '60 year', 'all year'), 
+#lty =c(1,1,1,1), col=c('black', 'red','blue', 'green'), cex = .5)
+legend(60,2000, legend= c('New London', 'Boston', 'Atlantic City', 'Portland'), 
+       pch =c(1,0,2,3), 
+       col=c('black', 'black','black', 'black'), cex = .5)
+
+
+#mu1
+#new london
+nl.mu1 <- c(percent.param(2, new.london.10, new.london.all)  ,
+            percent.param(2, new.london.20, new.london.all)  ,
+            percent.param(2, new.london.30, new.london.all)  ,
+            percent.param(2, new.london.40, new.london.all)  ,
+            percent.param(2, new.london.50, new.london.all)  ,
+            percent.param(2, new.london.60, new.london.all)  ,
+            percent.param(2, new.london.all, new.london.all))
+plot(nl.years, nl.mu1, type = 'l',xlim = c(0, 110), ylim = c(-1,15), xaxt = 'n', ylab = 'mu1')
+points(10, percent.param(2, new.london.10, new.london.all), cex = 1.5)
+points(20, percent.param(2, new.london.20, new.london.all) , cex = 1.5)
+points(30, percent.param(2, new.london.30, new.london.all) , cex = 1.5)
+points(40, percent.param(2, new.london.40, new.london.all), cex = 1.5)
+points(50, percent.param(2, new.london.50, new.london.all), cex = 1.5)
+points(60, percent.param(2, new.london.60, new.london.all) , cex = 1.5)
+points(76, percent.param(2, new.london.all, new.london.all), cex = 1.5)
+
+#boston 
+bos.mu1 <- c(percent.param(2, boston.10, boston.all), 
+             percent.param(2, boston.20, boston.all), 
+             percent.param(2, boston.30, boston.all), 
+             percent.param(2, boston.40, boston.all) ,
+             percent.param(2, boston.50, boston.all), 
+             percent.param(2, boston.60, boston.all), 
+             percent.param(2, boston.70, boston.all), 
+             percent.param(2, boston.80, boston.all), 
+             percent.param(2, boston.all, boston.all))
+lines(bos.years, bos.mu1)
+points(10,percent.param(2, boston.10, boston.all), pch = 0, cex = 1.5)
+points(20,percent.param(2, boston.20, boston.all), pch = 0, cex = 1.5)
+points(30,percent.param(2, boston.30, boston.all), pch = 0, cex = 1.5)
+points(40,percent.param(2, boston.40, boston.all) , pch = 0, cex = 1.5)
+points(50, percent.param(2, boston.50, boston.all), pch = 0, cex = 1.5)
+points(60, percent.param(2, boston.60, boston.all), pch = 0, cex = 1.5)
+points(70,percent.param(2, boston.70, boston.all), pch = 0, cex = 1.5)
+points(80,percent.param(2, boston.80, boston.all), pch = 0, cex = 1.5)
+points(94, percent.param(2, boston.all, boston.all), pch = 0, cex = 1.5)
+
+#atlantic city 
+al.city.mu1 <- c(percent.param(2, atlantic.city.10, atlantic.city.all), 
+                               percent.param(2, atlantic.city.20, atlantic.city.all),
+                               percent.param(2, atlantic.city.30, atlantic.city.all),
+                               percent.param(2, atlantic.city.40, atlantic.city.all),
+                               percent.param(2, atlantic.city.50, atlantic.city.all),
+                               percent.param(2, atlantic.city.60, atlantic.city.all),
+                               percent.param(2, atlantic.city.70, atlantic.city.all),
+                               percent.param(2, atlantic.city.80, atlantic.city.all),
+                               percent.param(2, atlantic.city.90, atlantic.city.all),
+                               percent.param(2, atlantic.city.all, atlantic.city.all))
+lines(al.city.years, al.city.mu1)
+points(10,percent.param(2, atlantic.city.10, atlantic.city.all), pch = 2, cex = 1.5)
+points(20,percent.param(2, atlantic.city.20, atlantic.city.all), pch = 2, cex = 1.5)
+points(30,percent.param(2, atlantic.city.30, atlantic.city.all), pch = 2, cex = 1.5)
+points(40, percent.param(2, atlantic.city.40, atlantic.city.all), pch = 2, cex = 1.5)
+points(50,percent.param(2, atlantic.city.50, atlantic.city.all), pch = 2, cex = 1.5)
+points(60,percent.param(2, atlantic.city.60, atlantic.city.all), pch = 2, cex = 1.5)
+points(70, percent.param(2, atlantic.city.70, atlantic.city.all),pch = 2, cex = 1.5)
+points(80, percent.param(2, atlantic.city.80, atlantic.city.all),pch = 2, cex = 1.5)
+points(90,percent.param(2, atlantic.city.90, atlantic.city.all), pch = 2, cex = 1.5)
+points(103,percent.param(2, atlantic.city.all, atlantic.city.all), pch = 2, cex = 1.5)
+
+#portland 
+portland.mu1 <- c(percent.param(2, portland.10, portland.all), 
+                  percent.param(2, portland.20, portland.all),
+                  percent.param(2, portland.30, portland.all), 
+                  percent.param(2, portland.40, portland.all),
+                  percent.param(2, portland.50, portland.all),
+                  percent.param(2, portland.60, portland.all),
+                  percent.param(2, portland.70, portland.all),
+                  percent.param(2, portland.80, portland.all), 
+                  percent.param(2, portland.90, portland.all), 
+                  percent.param(2, portland.all, portland.all))
+lines(portland.years, portland.mu1)
+points(10,percent.param(2, portland.10, portland.all), pch = 3, cex = 1.5)
+points(20,percent.param(2, portland.20, portland.all), pch = 3, cex = 1.5)
+points(30,percent.param(2, portland.30, portland.all), pch = 3, cex = 1.5)
+points(40,percent.param(2, portland.40, portland.all), pch = 3, cex = 1.5)
+points(50, percent.param(2, portland.50, portland.all), pch = 3, cex = 1.5)
+points(60,percent.param(2, portland.60, portland.all), pch = 3, cex = 1.5)
+points(70,percent.param(2, portland.70, portland.all), pch = 3, cex = 1.5)
+points(80,percent.param(2, portland.80, portland.all), pch = 3, cex = 1.5)
+points(90,percent.param(2, portland.90, portland.all), pch = 3, cex = 1.5)
+points(105,percent.param(2, portland.all, portland.all), pch = 3, cex = 1.5)
+
+#sigma0 
+#new london
+par(mar = c(0,4,0,1))
+nl.sigma0 <- c(percent.param(3, new.london.10, new.london.all)  ,
+               percent.param(3, new.london.20, new.london.all)  ,
+               percent.param(3, new.london.30, new.london.all)  ,
+               percent.param(3, new.london.40, new.london.all)  ,
+               percent.param(3, new.london.50, new.london.all)  ,
+               percent.param(3, new.london.60, new.london.all)  ,
+               percent.param(3, new.london.all, new.london.all))
+plot(nl.years, nl.sigma0, xlim = c(0, 110), ylim = c(-.01,.6), type = 'l', xaxt = 'n', ylab = 'sigma0')
+points(10, percent.param(3, new.london.10, new.london.all), cex = 1.5)
+points(20, percent.param(3, new.london.20, new.london.all) , cex = 1.5)
+points(30, percent.param(3, new.london.30, new.london.all) , cex = 1.5)
+points(40, percent.param(3, new.london.40, new.london.all), cex = 1.5)
+points(50, percent.param(3, new.london.50, new.london.all), cex = 1.5)
+points(60, percent.param(3, new.london.60, new.london.all) , cex = 1.5)
+points(76, percent.param(3, new.london.all, new.london.all), cex = 1.5)
+
+#boston 
+bos.sigma0 <- c(percent.param(3, boston.10, boston.all), 
+                percent.param(3, boston.20, boston.all), 
+                percent.param(3, boston.30, boston.all), 
+                percent.param(3, boston.40, boston.all) ,
+                percent.param(3, boston.50, boston.all), 
+                percent.param(3, boston.60, boston.all), 
+                percent.param(3, boston.70, boston.all), 
+                percent.param(3, boston.80, boston.all), 
+                percent.param(3, boston.all, boston.all))
+lines(bos.years, bos.sigma0)
+points(10,percent.param(3, boston.10, boston.all), pch = 0, cex = 1.5)
+points(20,percent.param(3, boston.20, boston.all), pch = 0, cex = 1.5)
+points(30,percent.param(3, boston.30, boston.all), pch = 0, cex = 1.5)
+points(40,percent.param(3, boston.40, boston.all) , pch = 0, cex = 1.5)
+points(50, percent.param(3, boston.50, boston.all), pch = 0, cex = 1.5)
+points(60, percent.param(3, boston.60, boston.all), pch = 0, cex = 1.5)
+points(70,percent.param(3, boston.70, boston.all), pch = 0, cex = 1.5)
+points(80,percent.param(3, boston.80, boston.all), pch = 0, cex = 1.5)
+points(94, percent.param(3, boston.all, boston.all), pch = 0, cex = 1.5)
+
+#atlantic city 
+al.city.sigma0 <-c(percent.param(3, atlantic.city.10, atlantic.city.all), 
+                   percent.param(3, atlantic.city.20, atlantic.city.all),
+                   percent.param(3, atlantic.city.30, atlantic.city.all),
+                   percent.param(3, atlantic.city.40, atlantic.city.all),
+                   percent.param(3, atlantic.city.50, atlantic.city.all),
+                   percent.param(3, atlantic.city.60, atlantic.city.all),
+                   percent.param(3, atlantic.city.70, atlantic.city.all),
+                   percent.param(3, atlantic.city.80, atlantic.city.all),
+                   percent.param(3, atlantic.city.90, atlantic.city.all),
+                   percent.param(3, atlantic.city.all, atlantic.city.all))
+lines(al.city.years, al.city.sigma0)
+points(10,percent.param(3, atlantic.city.10, atlantic.city.all), pch = 2, cex = 1.5)
+points(20,percent.param(3, atlantic.city.20, atlantic.city.all), pch = 2, cex = 1.5)
+points(30,ercent.param(3, atlantic.city.30, atlantic.city.all), pch = 2, cex = 1.5)
+points(40, percent.param(3, atlantic.city.40, atlantic.city.all), pch = 2, cex = 1.5)
+points(50,percent.param(3, atlantic.city.50, atlantic.city.all), pch = 2, cex = 1.5)
+points(60,percent.param(3, atlantic.city.60, atlantic.city.all), pch = 2, cex = 1.5)
+points(70, percent.param(3, atlantic.city.70, atlantic.city.all),pch = 2, cex = 1.5)
+points(80, percent.param(3, atlantic.city.80, atlantic.city.all),pch = 2, cex = 1.5)
+points(90,percent.param(3, atlantic.city.90, atlantic.city.all), pch = 2, cex = 1.5)
+points(103,percent.param(3, atlantic.city.all, atlantic.city.all), pch = 2, cex = 1.5)
+
+#portland 
+portland.sigma0 <- c(percent.param(3, portland.10, portland.all), 
+                     percent.param(3, portland.20, portland.all),
+                     percent.param(3, portland.30, portland.all), 
+                     percent.param(3, portland.40, portland.all),
+                     percent.param(3, portland.50, portland.all),
+                     percent.param(3, portland.60, portland.all),
+                     percent.param(3, portland.70, portland.all),
+                     percent.param(3, portland.80, portland.all), 
+                     percent.param(3, portland.90, portland.all), 
+                     percent.param(3, portland.all, portland.all))
+lines(portland.years, portland.sigma0)
+points(10,percent.param(3, portland.10, portland.all), pch = 3, cex = 1.5)
+points(20,percent.param(3, portland.20, portland.all), pch = 3, cex = 1.5)
+points(30,percent.param(3, portland.30, portland.all), pch = 3, cex = 1.5)
+points(40,percent.param(3, portland.40, portland.all), pch = 3, cex = 1.5)
+points(50, percent.param(3, portland.50, portland.all), pch = 3, cex = 1.5)
+points(60,percent.param(3, portland.60, portland.all), pch = 3, cex = 1.5)
+points(70,percent.param(3, portland.70, portland.all), pch = 3, cex = 1.5)
+points(80,percent.param(3, portland.80, portland.all), pch = 3, cex = 1.5)
+points(90,percent.param(3, portland.90, portland.all), pch = 3, cex = 1.5)
+points(105,percent.param(3, portland.all, portland.all), pch = 3, cex = 1.5)
+
+#sigma1
+#new london
+nl.sigma1 <-c(percent.param(4, new.london.10, new.london.all)  ,
+              percent.param(4, new.london.20, new.london.all)  ,
+              percent.param(4, new.london.30, new.london.all)  ,
+              percent.param(4, new.london.40, new.london.all)  ,
+              percent.param(4, new.london.50, new.london.all)  ,
+              percent.param(4, new.london.60, new.london.all)  ,
+              percent.param(4, new.london.all, new.london.all))
+plot(nl.years, nl.sigma1,xlim = c(0, 110), ylim = c(-.01,100), type = 'l' , xaxt = 'n', ylab = 'sigma1')
+points(10, percent.param(4, new.london.10, new.london.all), cex = 1.5)
+points(20, percent.param(4, new.london.20, new.london.all) , cex = 1.5)
+points(30, percent.param(4, new.london.30, new.london.all) , cex = 1.5)
+points(40, percent.param(4, new.london.40, new.london.all), cex = 1.5)
+points(50, percent.param(4, new.london.50, new.london.all), cex = 1.5)
+points(60, percent.param(4, new.london.60, new.london.all) , cex = 1.5)
+points(76, percent.param(4, new.london.all, new.london.all), cex = 1.5)
+#boston 
+bos.sigma1 <-c(percent.param(4, boston.10, boston.all), 
+               percent.param(4, boston.20, boston.all), 
+               percent.param(4, boston.30, boston.all), 
+               percent.param(4, boston.40, boston.all) ,
+               percent.param(4, boston.50, boston.all), 
+               percent.param(4, boston.60, boston.all), 
+               percent.param(4, boston.70, boston.all), 
+               percent.param(4, boston.80, boston.all), 
+               percent.param(4, boston.all, boston.all))
+lines(bos.years, bos.sigma1 )
+
+points(10,percent.param(4, boston.10, boston.all), pch = 0, cex = 1.5)
+points(20,percent.param(4, boston.20, boston.all), pch = 0, cex = 1.5)
+points(30,percent.param(4, boston.30, boston.all), pch = 0, cex = 1.5)
+points(40,percent.param(4, boston.40, boston.all) , pch = 0, cex = 1.5)
+points(50, percent.param(4, boston.50, boston.all), pch = 0, cex = 1.5)
+points(60, percent.param(4, boston.60, boston.all), pch = 0, cex = 1.5)
+points(70,percent.param(4, boston.70, boston.all), pch = 0, cex = 1.5)
+points(80,percent.param(4, boston.80, boston.all), pch = 0, cex = 1.5)
+points(94, percent.param(4, boston.all, boston.all), pch = 0, cex = 1.5)
+
+#atlantic city 
+al.city.sigma1 <- c(percent.param(4, atlantic.city.10, atlantic.city.all), 
+                    percent.param(4, atlantic.city.20, atlantic.city.all),
+                    percent.param(4, atlantic.city.30, atlantic.city.all),
+                    percent.param(4, atlantic.city.40, atlantic.city.all),
+                    percent.param(4, atlantic.city.50, atlantic.city.all),
+                    percent.param(4, atlantic.city.60, atlantic.city.all),
+                    percent.param(4, atlantic.city.70, atlantic.city.all),
+                    percent.param(4, atlantic.city.80, atlantic.city.all),
+                    percent.param(4, atlantic.city.90, atlantic.city.all),
+                    percent.param(4, atlantic.city.all, atlantic.city.all))
+lines(al.city.years, al.city.sigma1)
+points(10,percent.param(4, atlantic.city.10, atlantic.city.all), pch = 2, cex = 1.5)
+points(20,percent.param(4, atlantic.city.20, atlantic.city.all), pch = 2, cex = 1.5)
+points(30,percent.param(4, atlantic.city.30, atlantic.city.all), pch = 2, cex = 1.5)
+points(40, percent.param(4, atlantic.city.40, atlantic.city.all), pch = 2, cex = 1.5)
+points(50,percent.param(4, atlantic.city.50, atlantic.city.all), pch = 2, cex = 1.5)
+points(60,percent.param(4, atlantic.city.60, atlantic.city.all), pch = 2, cex = 1.5)
+points(70, percent.param(4, atlantic.city.70, atlantic.city.all),pch = 2, cex = 1.5)
+points(80, percent.param(4, atlantic.city.80, atlantic.city.all),pch = 2, cex = 1.5)
+points(90,percent.param(4, atlantic.city.90, atlantic.city.all), pch = 2, cex = 1.5)
+points(103,percent.param(4, atlantic.city.all, atlantic.city.all), pch = 2, cex = 1.5)
+#portland 
+portland.sigma1 <- c(percent.param(4, portland.10, portland.all), 
+                     percent.param(4, portland.20, portland.all),
+                     percent.param(4, portland.30, portland.all), 
+                     percent.param(4, portland.40, portland.all),
+                     percent.param(4, portland.50, portland.all),
+                     percent.param(4, portland.60, portland.all),
+                     percent.param(4, portland.70, portland.all),
+                     percent.param(4, portland.80, portland.all), 
+                     percent.param(4, portland.90, portland.all), 
+                     percent.param(4, portland.all, portland.all))
+lines(portland.years, portland.sigma1)
+points(10,percent.param(4, portland.10, portland.all), pch = 3, cex = 1.5)
+points(20,percent.param(4, portland.20, portland.all), pch = 3, cex = 1.5)
+points(30,percent.param(4, portland.30, portland.all), pch = 3, cex = 1.5)
+points(40,percent.param(4, portland.40, portland.all), pch = 3, cex = 1.5)
+points(50, percent.param(4, portland.50, portland.all), pch = 3, cex = 1.5)
+points(60,percent.param(4, portland.60, portland.all), pch = 3, cex = 1.5)
+points(70,percent.param(4, portland.70, portland.all), pch = 3, cex = 1.5)
+points(80,percent.param(4, portland.80, portland.all), pch = 3, cex = 1.5)
+points(90,percent.param(4, portland.90, portland.all), pch = 3, cex = 1.5)
+points(105,percent.param(4, portland.all, portland.all), pch = 3, cex = 1.5)
+
+#xi0
+#new london
+par(mar = c(4,4,0,1))
+nl.xi0 <- c(percent.param(5, new.london.10, new.london.all)  ,
+            percent.param(5, new.london.20, new.london.all)  ,
+            percent.param(5, new.london.30, new.london.all)  ,
+            percent.param(5, new.london.40, new.london.all)  ,
+            percent.param(5, new.london.50, new.london.all)  ,
+            percent.param(5, new.london.60, new.london.all)  ,
+            percent.param(5, new.london.all, new.london.all))
+plot(nl.years, nl.xi0,xlim = c(0, 110), ylim = c(-.01,30), type = 'l', ylab = 'xi0')
+points(10, percent.param(5, new.london.10, new.london.all), cex = 1.5)
+points(20, percent.param(5, new.london.20, new.london.all) , cex = 1.5)
+points(30, percent.param(5, new.london.30, new.london.all) , cex = 1.5)
+points(40, percent.param(5, new.london.40, new.london.all), cex = 1.5)
+points(50, percent.param(5, new.london.50, new.london.all), cex = 1.5)
+points(60, percent.param(5, new.london.60, new.london.all) , cex = 1.5)
+points(76, percent.param(5, new.london.all, new.london.all), cex = 1.5)
+
+#boston 
+bos.xi0 <- c(percent.param(5, boston.10, boston.all), 
+             percent.param(5, boston.20, boston.all), 
+             percent.param(5, boston.30, boston.all), 
+             percent.param(5, boston.40, boston.all) ,
+             percent.param(5, boston.50, boston.all), 
+             percent.param(5, boston.60, boston.all), 
+             percent.param(5, boston.70, boston.all), 
+             percent.param(5, boston.80, boston.all), 
+             percent.param(5, boston.all, boston.all))
+lines(bos.years, bos.xi0)
+points(10,percent.param(5, boston.10, boston.all), pch = 0, cex = 1.5)
+points(20,percent.param(5, boston.20, boston.all), pch = 0, cex = 1.5)
+points(30,percent.param(5, boston.30, boston.all), pch = 0, cex = 1.5)
+points(40,percent.param(5, boston.40, boston.all) , pch = 0, cex = 1.5)
+points(50, percent.param(5, boston.50, boston.all), pch = 0, cex = 1.5)
+points(60, percent.param(5, boston.60, boston.all), pch = 0, cex = 1.5)
+points(70,percent.param(5, boston.70, boston.all), pch = 0, cex = 1.5)
+points(80,percent.param(5, boston.80, boston.all), pch = 0, cex = 1.5)
+points(94, percent.param(5, boston.all, boston.all), pch = 0, cex = 1.5)
+
+#atlantic city 
+al.city.xi0 <- c(percent.param(5, atlantic.city.10, atlantic.city.all), 
+                 percent.param(5, atlantic.city.20, atlantic.city.all),
+                 percent.param(5, atlantic.city.30, atlantic.city.all),
+                 percent.param(5, atlantic.city.40, atlantic.city.all),
+                 percent.param(5, atlantic.city.50, atlantic.city.all),
+                 percent.param(5, atlantic.city.60, atlantic.city.all),
+                 percent.param(5, atlantic.city.70, atlantic.city.all),
+                 percent.param(5, atlantic.city.80, atlantic.city.all),
+                 percent.param(5, atlantic.city.90, atlantic.city.all),
+                 percent.param(5, atlantic.city.all, atlantic.city.all))
+lines(al.city.years, al.city.xi0)
+points(10,percent.param(5, atlantic.city.10, atlantic.city.all), pch = 2, cex = 1.5)
+points(20,percent.param(5, atlantic.city.20, atlantic.city.all), pch = 2, cex = 1.5)
+points(30,percent.param(5, atlantic.city.30, atlantic.city.all), pch = 2, cex = 1.5)
+points(40, percent.param(5, atlantic.city.40, atlantic.city.all), pch = 2, cex = 1.5)
+points(50,percent.param(5, atlantic.city.50, atlantic.city.all), pch = 2, cex = 1.5)
+points(60,percent.param(5, atlantic.city.60, atlantic.city.all), pch = 2, cex = 1.5)
+points(70, percent.param(5, atlantic.city.70, atlantic.city.all),pch = 2, cex = 1.5)
+points(80, percent.param(5, atlantic.city.80, atlantic.city.all),pch = 2, cex = 1.5)
+points(90,percent.param(5, atlantic.city.90, atlantic.city.all), pch = 2, cex = 1.5)
+points(103,percent.param(5, atlantic.city.all, atlantic.city.all), pch = 2, cex = 1.5)
+
+#portland 
+portland.xi0<- c(percent.param(5, portland.10, portland.all), 
+                 percent.param(5, portland.20, portland.all),
+                 percent.param(5, portland.30, portland.all), 
+                 percent.param(5, portland.40, portland.all),
+                 percent.param(5, portland.50, portland.all),
+                 percent.param(5, portland.60, portland.all),
+                 percent.param(5, portland.70, portland.all),
+                 percent.param(5, portland.80, portland.all), 
+                 percent.param(5, portland.90, portland.all), 
+                 percent.param(5, portland.all, portland.all))
+lines(portland.years, portland.xi0)
+points(10,percent.param(5, portland.10, portland.all), pch = 3, cex = 1.5)
+points(20,percent.param(5, portland.20, portland.all), pch = 3, cex = 1.5)
+points(30,percent.param(5, portland.30, portland.all), pch = 3, cex = 1.5)
+points(40,percent.param(5, portland.40, portland.all), pch = 3, cex = 1.5)
+points(50, percent.param(5, portland.50, portland.all), pch = 3, cex = 1.5)
+points(60,percent.param(5, portland.60, portland.all), pch = 3, cex = 1.5)
+points(70,percent.param(5, portland.70, portland.all), pch = 3, cex = 1.5)
+points(80,percent.param(5, portland.80, portland.all), pch = 3, cex = 1.5)
+points(90,percent.param(5, portland.90, portland.all), pch = 3, cex = 1.5)
+points(105,percent.param(5, portland.all, portland.all), pch = 3, cex = 1.5)
+
+#xi1
+#new london
+nl.xi1 <- c(percent.param(6, new.london.10, new.london.all)  ,
+            percent.param(6, new.london.20, new.london.all)  ,
+            percent.param(6, new.london.30, new.london.all)  ,
+            percent.param(6, new.london.40, new.london.all)  ,
+            percent.param(6, new.london.50, new.london.all)  ,
+            percent.param(6, new.london.60, new.london.all)  ,
+            percent.param(6, new.london.all, new.london.all))
+plot(nl.years, nl.xi1, xlim = c(0, 110), ylim = c(-.01,20), type = 'l', ylab = 'xi1')
+points(10, percent.param(6, new.london.10, new.london.all), cex = 1.5)
+points(20, percent.param(6, new.london.20, new.london.all) , cex = 1.5)
+points(30, percent.param(6, new.london.30, new.london.all) , cex = 1.5)
+points(40, percent.param(6, new.london.40, new.london.all), cex = 1.5)
+points(50, percent.param(6, new.london.50, new.london.all), cex = 1.5)
+points(60, percent.param(6, new.london.60, new.london.all) , cex = 1.5)
+points(76, percent.param(6, new.london.all, new.london.all), cex = 1.5)
+
+#boston 
+bos.xi1 <- c(percent.param(6, boston.10, boston.all), 
+             percent.param(6, boston.20, boston.all), 
+             percent.param(6, boston.30, boston.all), 
+             percent.param(6, boston.40, boston.all) ,
+             percent.param(6, boston.50, boston.all), 
+             percent.param(6, boston.60, boston.all), 
+             percent.param(6, boston.70, boston.all), 
+             percent.param(6, boston.80, boston.all), 
+             percent.param(6, boston.all, boston.all))
+lines(bos.years, bos.xi1)
+points(10,percent.param(6, boston.10, boston.all), pch = 0, cex = 1.5)
+points(20,percent.param(6, boston.20, boston.all), pch = 0, cex = 1.5)
+points(30,percent.param(6, boston.30, boston.all), pch = 0, cex = 1.5)
+points(40,percent.param(6, boston.40, boston.all) , pch = 0, cex = 1.5)
+points(50, percent.param(6, boston.50, boston.all), pch = 0, cex = 1.5)
+points(60, percent.param(6, boston.60, boston.all), pch = 0, cex = 1.5)
+points(70,percent.param(6, boston.70, boston.all), pch = 0, cex = 1.5)
+points(80,percent.param(6, boston.80, boston.all), pch = 0, cex = 1.5)
+points(94, percent.param(6, boston.all, boston.all), pch = 0, cex = 1.5)
+#atlantic city 
+al.city.xi1 <- c(percent.param(6, atlantic.city.10, atlantic.city.all), 
+                 percent.param(6, atlantic.city.20, atlantic.city.all),
+                 percent.param(6, atlantic.city.30, atlantic.city.all),
+                 percent.param(6, atlantic.city.40, atlantic.city.all),
+                 percent.param(6, atlantic.city.50, atlantic.city.all),
+                 percent.param(6, atlantic.city.60, atlantic.city.all),
+                 percent.param(6, atlantic.city.70, atlantic.city.all),
+                 percent.param(6, atlantic.city.80, atlantic.city.all),
+                 percent.param(6, atlantic.city.90, atlantic.city.all),
+                 percent.param(1, atlantic.city.all, atlantic.city.all))
+lines(al.city.years, al.city.xi1)
+points(10,percent.param(6, atlantic.city.10, atlantic.city.all), pch = 2, cex = 1.5)
+points(20,percent.param(6, atlantic.city.20, atlantic.city.all), pch = 2, cex = 1.5)
+points(30,percent.param(6, atlantic.city.30, atlantic.city.all), pch = 2, cex = 1.5)
+points(40, percent.param(6, atlantic.city.40, atlantic.city.all), pch = 2, cex = 1.5)
+points(50,percent.param(6, atlantic.city.50, atlantic.city.all), pch = 2, cex = 1.5)
+points(60,percent.param(6, atlantic.city.60, atlantic.city.all), pch = 2, cex = 1.5)
+points(70, percent.param(6, atlantic.city.70, atlantic.city.all),pch = 2, cex = 1.5)
+points(80, percent.param(6, atlantic.city.80, atlantic.city.all),pch = 2, cex = 1.5)
+points(90,percent.param(6, atlantic.city.90, atlantic.city.all), pch = 2, cex = 1.5)
+points(103,percent.param(6, atlantic.city.all, atlantic.city.all), pch = 2, cex = 1.5)
+
+#portland 
+portland.xi1 <- c(percent.param(6, portland.10, portland.all), 
+                  percent.param(6, portland.20, portland.all),
+                  percent.param(6, portland.30, portland.all), 
+                  percent.param(6, portland.40, portland.all),
+                  percent.param(6, portland.50, portland.all),
+                  percent.param(6, portland.60, portland.all),
+                  percent.param(6, portland.70, portland.all),
+                  percent.param(6, portland.80, portland.all), 
+                  percent.param(6, portland.90, portland.all), 
+                  percent.param(6, portland.all, portland.all))
+lines(portland.years, portland.xi1)
+points(10,percent.param(6, portland.10, portland.all), pch = 3, cex = 1.5)
+points(20,percent.param(6, portland.20, portland.all), pch = 3, cex = 1.5)
+points(30,percent.param(6, portland.30, portland.all), pch = 3, cex = 1.5)
+points(40,percent.param(6, portland.40, portland.all), pch = 3, cex = 1.5)
+points(50, percent.param(6, portland.50, portland.all), pch = 3, cex = 1.5)
+points(60,percent.param(6, portland.60, portland.all), pch = 3, cex = 1.5)
+points(70,percent.param(6, portland.70, portland.all), pch = 3, cex = 1.5)
+points(80,percent.param(6, portland.80, portland.all), pch = 3, cex = 1.5)
+points(90,percent.param(6, portland.90, portland.all), pch = 3, cex = 1.5)
+points(105,percent.param(6, portland.all, portland.all), pch = 3, cex = 1.5)
+#-----------------------------------------------------------------------------
+
+#GEV Stabailzation Sationary ------------------------------------------
+percent.param.stat <- function(ind, city.year, city.all){
+  return(abs((city.year$stat[ind] - city.all$stat[ind]) / city.all$stat[ind]))
+}
+
+par(mfrow = c(3,1))
+par(mar = c(0,4,2,1))
+#mu0
+#new london
+nl.years <- c(10,20,30,40,50,60,76)
+nl.mu0 <- c(percent.param.stat(1, new.london.10, new.london.all)  ,
+            percent.param.stat(1, new.london.20, new.london.all)  ,
+            percent.param.stat(1, new.london.30, new.london.all)  ,
+            percent.param.stat(1, new.london.40, new.london.all)  ,
+            percent.param.stat(1, new.london.50, new.london.all)  ,
+            percent.param.stat(1, new.london.60, new.london.all)  ,
+            percent.param.stat(1, new.london.all, new.london.all))
+plot(nl.years, nl.mu0, type = 'l', xlim = c(0,110), ylim = c(0,.05), xaxt = 'n', ylab = 'mu0')
+points(10, percent.param.stat(1, new.london.10, new.london.all), cex = 1.5)
+points(20, percent.param.stat(1, new.london.20, new.london.all) , cex = 1.5)
+points(30, percent.param.stat(1, new.london.30, new.london.all) , cex = 1.5)
+points(40, percent.param.stat(1, new.london.40, new.london.all), cex = 1.5)
+points(50, percent.param.stat(1, new.london.50, new.london.all), cex = 1.5)
+points(60, percent.param.stat(1, new.london.60, new.london.all) , cex = 1.5)
+points(76, percent.param.stat(1, new.london.all, new.london.all), cex = 1.5)
+
+#boston 
+bos.years <- c(10,20,30,40,50,60,70,80,94)
+bos.mu0 <- c(percent.param.stat(1, boston.10, boston.all), 
+             percent.param.stat(1, boston.20, boston.all), 
+             percent.param.stat(1, boston.30, boston.all), 
+             percent.param.stat(1, boston.40, boston.all) ,
+             percent.param.stat(1, boston.50, boston.all), 
+             percent.param.stat(1, boston.60, boston.all), 
+             percent.param.stat(1, boston.70, boston.all), 
+             percent.param.stat(1, boston.80, boston.all), 
+             percent.param.stat(1, boston.all, boston.all))
+lines(bos.years, bos.mu0)
+points(10,percent.param.stat(1, boston.10, boston.all), pch = 0, cex = 1.5)
+points(20,percent.param.stat(1, boston.20, boston.all), pch = 0, cex = 1.5)
+points(30,percent.param.stat(1, boston.30, boston.all), pch = 0, cex = 1.5)
+points(40,percent.param.stat(1, boston.40, boston.all) , pch = 0, cex = 1.5)
+points(50, percent.param.stat(1, boston.50, boston.all), pch = 0, cex = 1.5)
+points(60, percent.param.stat(1, boston.60, boston.all), pch = 0, cex = 1.5)
+points(70,percent.param.stat(1, boston.70, boston.all), pch = 0, cex = 1.5)
+points(80,percent.param.stat(1, boston.80, boston.all), pch = 0, cex = 1.5)
+points(94, percent.param.stat(1, boston.all, boston.all), pch = 0, cex = 1.5)
+
+#atlantic city 
+al.city.years <- c(10,20,30,40,50,60,70,80,90, 103)
+al.city.mu0 <- c(percent.param.stat(1, atlantic.city.10, atlantic.city.all), 
+                 percent.param.stat(1, atlantic.city.20, atlantic.city.all),
+                 percent.param.stat(1, atlantic.city.30, atlantic.city.all),
+                 percent.param.stat(1, atlantic.city.40, atlantic.city.all),
+                 percent.param.stat(1, atlantic.city.50, atlantic.city.all),
+                 percent.param.stat(1, atlantic.city.60, atlantic.city.all),
+                 percent.param.stat(1, atlantic.city.70, atlantic.city.all),
+                 percent.param.stat(1, atlantic.city.80, atlantic.city.all),
+                 percent.param.stat(1, atlantic.city.90, atlantic.city.all),
+                 percent.param.stat(1, atlantic.city.all, atlantic.city.all))
+lines(al.city.years, al.city.mu0)
+points(10,percent.param.stat(1, atlantic.city.10, atlantic.city.all), pch = 2, cex = 1.5)
+points(20,percent.param.stat(1, atlantic.city.20, atlantic.city.all), pch = 2, cex = 1.5)
+points(30,percent.param.stat(1, atlantic.city.30, atlantic.city.all), pch = 2, cex = 1.5)
+points(40, percent.param.stat(1, atlantic.city.40, atlantic.city.all), pch = 2, cex = 1.5)
+points(50,percent.param.stat(1, atlantic.city.50, atlantic.city.all), pch = 2, cex = 1.5)
+points(60,percent.param.stat(1, atlantic.city.60, atlantic.city.all), pch = 2, cex = 1.5)
+points(70, percent.param.stat(1, atlantic.city.70, atlantic.city.all),pch = 2, cex = 1.5)
+points(80, percent.param.stat(1, atlantic.city.80, atlantic.city.all),pch = 2, cex = 1.5)
+points(90,percent.param.stat(1, atlantic.city.90, atlantic.city.all), pch = 2, cex = 1.5)
+points(103,percent.param.stat(1, atlantic.city.all, atlantic.city.all), pch = 2, cex = 1.5)
+
+#portland 
+portland.years <- c(10,20,30,40,50,60,70,80,90, 105)
+portland.mu0 <- c(percent.param.stat(1, portland.10, portland.all), 
+                  percent.param.stat(1, portland.20, portland.all),
+                  percent.param.stat(1, portland.30, portland.all), 
+                  percent.param.stat(1, portland.40, portland.all),
+                  percent.param.stat(1, portland.50, portland.all),
+                  percent.param.stat(1, portland.60, portland.all),
+                  percent.param.stat(1, portland.70, portland.all),
+                  percent.param.stat(1, portland.80, portland.all), 
+                  percent.param.stat(1, portland.90, portland.all), 
+                  percent.param.stat(1, portland.all, portland.all))
+lines(portland.years, portland.mu0)
+points(10,percent.param.stat(1, portland.10, portland.all), pch = 3, cex = 1.5)
+points(20,percent.param.stat(1, portland.20, portland.all), pch = 3, cex = 1.5)
+points(30,percent.param.stat(1, portland.30, portland.all), pch = 3, cex = 1.5)
+points(40,percent.param.stat(1, portland.40, portland.all), pch = 3, cex = 1.5)
+points(50, percent.param.stat(1, portland.50, portland.all), pch = 3, cex = 1.5)
+points(60,percent.param.stat(1, portland.60, portland.all), pch = 3, cex = 1.5)
+points(70,percent.param.stat(1, portland.70, portland.all), pch = 3, cex = 1.5)
+points(80,percent.param.stat(1, portland.80, portland.all), pch = 3, cex = 1.5)
+points(90,percent.param.stat(1, portland.90, portland.all), pch = 3, cex = 1.5)
+points(105,percent.param.stat(1, portland.all, portland.all), pch = 3, cex = 1.5)
+
+#legend(30, 2000, legend= c('30 year', '45 year', '60 year', 'all year'), 
+#lty =c(1,1,1,1), col=c('black', 'red','blue', 'green'), cex = .5)
+legend(60,2000, legend= c('New London', 'Boston', 'Atlantic City', 'Portland'), 
+       pch =c(1,0,2,3), 
+       col=c('black', 'black','black', 'black'), cex = .5)
+
+
+#sigma0 
+#new london
+par(mar = c(0,4,0,1))
+nl.sigma0 <- c(percent.param.stat(2, new.london.10, new.london.all)  ,
+               percent.param.stat(2, new.london.20, new.london.all)  ,
+               percent.param.stat(2, new.london.30, new.london.all)  ,
+               percent.param.stat(2, new.london.40, new.london.all)  ,
+               percent.param.stat(2, new.london.50, new.london.all)  ,
+               percent.param.stat(2, new.london.60, new.london.all)  ,
+               percent.param.stat(2, new.london.all, new.london.all))
+plot(nl.years, nl.sigma0, xlim = c(0, 110), ylim = c(-.01,1), type = 'l', xaxt = 'n', ylab = 'sigma0')
+points(10, percent.param.stat(2, new.london.10, new.london.all), cex = 1.5)
+points(20, percent.param.stat(2, new.london.20, new.london.all) , cex = 1.5)
+points(30, percent.param.stat(2, new.london.30, new.london.all) , cex = 1.5)
+points(40, percent.param.stat(2, new.london.40, new.london.all), cex = 1.5)
+points(50, percent.param.stat(2, new.london.50, new.london.all), cex = 1.5)
+points(60, percent.param.stat(2, new.london.60, new.london.all) , cex = 1.5)
+points(76, percent.param.stat(2, new.london.all, new.london.all), cex = 1.5)
+
+#boston 
+bos.sigma0 <- c(percent.param.stat(2, boston.10, boston.all), 
+                percent.param.stat(2, boston.20, boston.all), 
+                percent.param.stat(2, boston.30, boston.all), 
+                percent.param.stat(2, boston.40, boston.all) ,
+                percent.param.stat(2, boston.50, boston.all), 
+                percent.param.stat(2, boston.60, boston.all), 
+                percent.param.stat(2, boston.70, boston.all), 
+                percent.param.stat(2, boston.80, boston.all), 
+                percent.param.stat(2, boston.all, boston.all))
+lines(bos.years, bos.sigma0)
+points(10,percent.param.stat(2, boston.10, boston.all), pch = 0, cex = 1.5)
+points(20,percent.param.stat(2, boston.20, boston.all), pch = 0, cex = 1.5)
+points(30,percent.param.stat(2, boston.30, boston.all), pch = 0, cex = 1.5)
+points(40,percent.param.stat(2, boston.40, boston.all) , pch = 0, cex = 1.5)
+points(50, percent.param.stat(2, boston.50, boston.all), pch = 0, cex = 1.5)
+points(60, percent.param.stat(2, boston.60, boston.all), pch = 0, cex = 1.5)
+points(70,percent.param.stat(2, boston.70, boston.all), pch = 0, cex = 1.5)
+points(80,percent.param.stat(2, boston.80, boston.all), pch = 0, cex = 1.5)
+points(94, percent.param.stat(2, boston.all, boston.all), pch = 0, cex = 1.5)
+
+#atlantic city 
+al.city.sigma0 <-c(percent.param.stat(2, atlantic.city.10, atlantic.city.all), 
+                   percent.param.stat(2, atlantic.city.20, atlantic.city.all),
+                   percent.param.stat(2, atlantic.city.30, atlantic.city.all),
+                   percent.param.stat(2, atlantic.city.40, atlantic.city.all),
+                   percent.param.stat(2, atlantic.city.50, atlantic.city.all),
+                   percent.param.stat(2, atlantic.city.60, atlantic.city.all),
+                   percent.param.stat(2, atlantic.city.70, atlantic.city.all),
+                   percent.param.stat(2, atlantic.city.80, atlantic.city.all),
+                   percent.param.stat(2, atlantic.city.90, atlantic.city.all),
+                   percent.param.stat(2, atlantic.city.all, atlantic.city.all))
+lines(al.city.years, al.city.sigma0)
+points(10,percent.param.stat(2, atlantic.city.10, atlantic.city.all), pch = 2, cex = 1.5)
+points(20,percent.param.stat(2, atlantic.city.20, atlantic.city.all), pch = 2, cex = 1.5)
+points(30,ercent.param(2, atlantic.city.30, atlantic.city.all), pch = 2, cex = 1.5)
+points(40, percent.param.stat(2, atlantic.city.40, atlantic.city.all), pch = 2, cex = 1.5)
+points(50,percent.param.stat(2, atlantic.city.50, atlantic.city.all), pch = 2, cex = 1.5)
+points(60,percent.param.stat(2, atlantic.city.60, atlantic.city.all), pch = 2, cex = 1.5)
+points(70, percent.param.stat(2, atlantic.city.70, atlantic.city.all),pch = 2, cex = 1.5)
+points(80, percent.param.stat(2, atlantic.city.80, atlantic.city.all),pch = 2, cex = 1.5)
+points(90,percent.param.stat(2, atlantic.city.90, atlantic.city.all), pch = 2, cex = 1.5)
+points(103,percent.param.stat(2, atlantic.city.all, atlantic.city.all), pch = 2, cex = 1.5)
+
+#portland 
+portland.sigma0 <- c(percent.param.stat(2, portland.10, portland.all), 
+                     percent.param.stat(2, portland.20, portland.all),
+                     percent.param.stat(2, portland.30, portland.all), 
+                     percent.param.stat(2, portland.40, portland.all),
+                     percent.param.stat(2, portland.50, portland.all),
+                     percent.param.stat(2, portland.60, portland.all),
+                     percent.param.stat(2, portland.70, portland.all),
+                     percent.param.stat(2, portland.80, portland.all), 
+                     percent.param.stat(2, portland.90, portland.all), 
+                     percent.param.stat(2, portland.all, portland.all))
+lines(portland.years, portland.sigma0)
+points(10,percent.param.stat(2, portland.10, portland.all), pch = 3, cex = 1.5)
+points(20,percent.param.stat(2, portland.20, portland.all), pch = 3, cex = 1.5)
+points(30,percent.param.stat(2, portland.30, portland.all), pch = 3, cex = 1.5)
+points(40,percent.param.stat(2, portland.40, portland.all), pch = 3, cex = 1.5)
+points(50, percent.param.stat(2, portland.50, portland.all), pch = 3, cex = 1.5)
+points(60,percent.param.stat(2, portland.60, portland.all), pch = 3, cex = 1.5)
+points(70,percent.param.stat(2, portland.70, portland.all), pch = 3, cex = 1.5)
+points(80,percent.param.stat(2, portland.80, portland.all), pch = 3, cex = 1.5)
+points(90,percent.param.stat(2, portland.90, portland.all), pch = 3, cex = 1.5)
+points(105,percent.param.stat(2, portland.all, portland.all), pch = 3, cex = 1.5)
+
+
+#xi0
+#new london
+par(mar = c(4,4,0,1))
+nl.xi0 <- c(percent.param.stat(3, new.london.10, new.london.all)  ,
+            percent.param.stat(3, new.london.20, new.london.all)  ,
+            percent.param.stat(3, new.london.30, new.london.all)  ,
+            percent.param.stat(3, new.london.40, new.london.all)  ,
+            percent.param.stat(3, new.london.50, new.london.all)  ,
+            percent.param.stat(3, new.london.60, new.london.all)  ,
+            percent.param.stat(3, new.london.all, new.london.all))
+plot(nl.years, nl.xi0,xlim = c(0, 110), ylim = c(-.01,15), type = 'l', ylab = 'xi0')
+points(10, percent.param.stat(3, new.london.10, new.london.all), cex = 1.5)
+points(20, percent.param.stat(3, new.london.20, new.london.all) , cex = 1.5)
+points(30, percent.param.stat(3, new.london.30, new.london.all) , cex = 1.5)
+points(40, percent.param.stat(3, new.london.40, new.london.all), cex = 1.5)
+points(50, percent.param.stat(3, new.london.50, new.london.all), cex = 1.5)
+points(60, percent.param.stat(3, new.london.60, new.london.all) , cex = 1.5)
+points(76, percent.param.stat(3, new.london.all, new.london.all), cex = 1.5)
+
+#boston 
+bos.xi0 <- c(percent.param.stat(3, boston.10, boston.all), 
+             percent.param.stat(3, boston.20, boston.all), 
+             percent.param.stat(3, boston.30, boston.all), 
+             percent.param.stat(3, boston.40, boston.all) ,
+             percent.param.stat(3, boston.50, boston.all), 
+             percent.param.stat(3, boston.60, boston.all), 
+             percent.param.stat(3, boston.70, boston.all), 
+             percent.param.stat(3, boston.80, boston.all), 
+             percent.param.stat(3, boston.all, boston.all))
+lines(bos.years, bos.xi0)
+points(10,percent.param.stat(3, boston.10, boston.all), pch = 0, cex = 1.5)
+points(20,percent.param.stat(3, boston.20, boston.all), pch = 0, cex = 1.5)
+points(30,percent.param.stat(3, boston.30, boston.all), pch = 0, cex = 1.5)
+points(40,percent.param.stat(3, boston.40, boston.all) , pch = 0, cex = 1.5)
+points(50, percent.param.stat(3, boston.50, boston.all), pch = 0, cex = 1.5)
+points(60, percent.param.stat(3, boston.60, boston.all), pch = 0, cex = 1.5)
+points(70,percent.param.stat(3, boston.70, boston.all), pch = 0, cex = 1.5)
+points(80,percent.param.stat(3, boston.80, boston.all), pch = 0, cex = 1.5)
+points(94, percent.param.stat(3, boston.all, boston.all), pch = 0, cex = 1.5)
+
+#atlantic city 
+al.city.xi0 <- c(percent.param.stat(3, atlantic.city.10, atlantic.city.all), 
+                 percent.param.stat(3, atlantic.city.20, atlantic.city.all),
+                 percent.param.stat(3, atlantic.city.30, atlantic.city.all),
+                 percent.param.stat(3, atlantic.city.40, atlantic.city.all),
+                 percent.param.stat(3, atlantic.city.50, atlantic.city.all),
+                 percent.param.stat(3, atlantic.city.60, atlantic.city.all),
+                 percent.param.stat(3, atlantic.city.70, atlantic.city.all),
+                 percent.param.stat(3, atlantic.city.80, atlantic.city.all),
+                 percent.param.stat(3, atlantic.city.90, atlantic.city.all),
+                 percent.param.stat(3, atlantic.city.all, atlantic.city.all))
+lines(al.city.years, al.city.xi0)
+points(10,percent.param.stat(3, atlantic.city.10, atlantic.city.all), pch = 2, cex = 1.5)
+points(20,percent.param.stat(3, atlantic.city.20, atlantic.city.all), pch = 2, cex = 1.5)
+points(30,percent.param.stat(3, atlantic.city.30, atlantic.city.all), pch = 2, cex = 1.5)
+points(40, percent.param.stat(3, atlantic.city.40, atlantic.city.all), pch = 2, cex = 1.5)
+points(50,percent.param.stat(3, atlantic.city.50, atlantic.city.all), pch = 2, cex = 1.5)
+points(60,percent.param.stat(3, atlantic.city.60, atlantic.city.all), pch = 2, cex = 1.5)
+points(70, percent.param.stat(3, atlantic.city.70, atlantic.city.all),pch = 2, cex = 1.5)
+points(80, percent.param.stat(3, atlantic.city.80, atlantic.city.all),pch = 2, cex = 1.5)
+points(90,percent.param.stat(3, atlantic.city.90, atlantic.city.all), pch = 2, cex = 1.5)
+points(103,percent.param.stat(3, atlantic.city.all, atlantic.city.all), pch = 2, cex = 1.5)
+
+#portland 
+portland.xi0<- c(percent.param.stat(3, portland.10, portland.all), 
+                 percent.param.stat(3, portland.20, portland.all),
+                 percent.param.stat(3, portland.30, portland.all), 
+                 percent.param.stat(3, portland.40, portland.all),
+                 percent.param.stat(3, portland.50, portland.all),
+                 percent.param.stat(3, portland.60, portland.all),
+                 percent.param.stat(3, portland.70, portland.all),
+                 percent.param.stat(3, portland.80, portland.all), 
+                 percent.param.stat(3, portland.90, portland.all), 
+                 percent.param.stat(3, portland.all, portland.all))
+lines(portland.years, portland.xi0)
+points(10,percent.param.stat(3, portland.10, portland.all), pch = 3, cex = 1.5)
+points(20,percent.param.stat(3, portland.20, portland.all), pch = 3, cex = 1.5)
+points(30,percent.param.stat(3, portland.30, portland.all), pch = 3, cex = 1.5)
+points(40,percent.param.stat(3, portland.40, portland.all), pch = 3, cex = 1.5)
+points(50, percent.param.stat(3, portland.50, portland.all), pch = 3, cex = 1.5)
+points(60,percent.param.stat(3, portland.60, portland.all), pch = 3, cex = 1.5)
+points(70,percent.param.stat(3, portland.70, portland.all), pch = 3, cex = 1.5)
+points(80,percent.param.stat(3, portland.80, portland.all), pch = 3, cex = 1.5)
+points(90,percent.param.stat(3, portland.90, portland.all), pch = 3, cex = 1.5)
+points(105,percent.param.stat(3, portland.all, portland.all), pch = 3, cex = 1.5)
+#------------------------------------------
+
+
+
+boston.10 <- get.prior.estimates(boston$max[84:94], boston.temps$values[84:94])
+boston.20 <- get.prior.estimates(boston$max[74:94], boston.temps$values[74:94])
+boston.30 <- get.prior.estimates(boston$max[64:94], boston.temps$values[64:94])
+boston.40 <- get.prior.estimates(boston$max[54:94], boston.temps$values[54:94])
+boston.50 <- get.prior.estimates(boston$max[44:94], boston.temps$values[44:94])
+boston.60 <- get.prior.estimates(boston$max[34:94], boston.temps$values[34:94])
+boston.70 <- get.prior.estimates(boston$max[24:94], boston.temps$values[24:94])
+boston.80 <- get.prior.estimates(boston$max[14:94], boston.temps$values[14:94])
+boston.all <- get.prior.estimates(boston$max, boston.temps$values)
+
+
+portland.10 <- get.prior.estimates(portland$max[95:105], portland.temps$values[95:105])
+portland.20 <- get.prior.estimates(portland$max[85:105], portland.temps$values[85:105])
+portland.30 <- get.prior.estimates(portland$max[75:105], portland.temps$values[75:105])
+portland.40 <- get.prior.estimates(portland$max[65:105], portland.temps$values[65:105])
+portland.50 <- get.prior.estimates(portland$max[55:105], portland.temps$values[55:105])
+portland.60 <- get.prior.estimates(portland$max[45:105], portland.temps$values[45:105])
+portland.70 <- get.prior.estimates(portland$max[35:105], portland.temps$values[35:105])
+portland.80 <- get.prior.estimates(portland$max[25:105], portland.temps$values[25:105])
+portland.90 <- get.prior.estimates(portland$max[15:105], portland.temps$values[15:105])
+portland.all <- get.prior.estimates(portland$max, portland.temps$values)
+
+save.image('run.confidence.RData')
+

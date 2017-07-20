@@ -5,30 +5,30 @@
 #
 # Script in order to read NOAA temperature data
 
-<<<<<<< HEAD
+
 read.temp.data <- function(start, end){
   #sets working directory for script
   setwd('~/codes/Klufas_NewLondon/')
 
-  #read temp data 
+  #read temp data
   start <- start-1880
   end <- end-1880
   temp.data <- read.table('noaa-temp-1880-2017.csv', header = TRUE, sep=',')
   temp.years <- temp.data$Year[start:end]
-  temp.values <- temp.data$Value[start:end]     #limit temp data to just the years I am working with 
-=======
-read.temp.data <- function(years.use){
+  temp.values <- temp.data$Value[start:end]     #limit temp data to just the years I am working with
+
+#read.temp.data <- function(years.use){
   #sets working directory for script
-  setwd('~/codes/Klufas_NewLondon/')
+  #setwd('~/codes/Klufas_NewLondon/')
 
   #read temp data
-  temp.data <- read.table('noaa-temp-1880-2017.csv', header = TRUE, sep=',')
-  temp.years <- temp.data$Year
+  #temp.data <- read.table('noaa-temp-1880-2017.csv', header = TRUE, sep=',')
+  #temp.years <- temp.data$Year
 
-  ind.use <- which(temp.years==years.use[1]):which(temp.years==max(years.use))
-  temp.values <- temp.data$Value[ind.use]     #limit temp data to just the years I am working with
-  temp.years <- temp.years[ind.use]
->>>>>>> 549c64b859e708cff09a5842fa6597b08beb7ec9
+  #ind.use <- which(temp.years==years.use[1]):which(temp.years==max(years.use))
+  #temp.values <- temp.data$Value[ind.use]     #limit temp data to just the years I am working with
+ # temp.years <- temp.years[ind.use]
+
 
   temps <- vector('list', 2)
 
