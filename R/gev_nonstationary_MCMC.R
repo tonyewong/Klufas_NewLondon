@@ -146,9 +146,9 @@ log.like.pri.nonstat<- function(p, parnames, min, max, temps){
       
       lpri <- p.mu0 + p.mu1 + p.sigma + p.xi
 
-
-      mu <-mu0 + mu1*temps
-      #print(mu)
+# 
+#       mu <-mu0 + mu1*temps
+#       #print(mu)
 
     }
     else if (parnames[2] == 'sigma0'){
@@ -183,7 +183,7 @@ log.like.pri.nonstat<- function(p, parnames, min, max, temps){
       lpri <- p.mu + p.sigma + p.xi0 + p.xi1
 
 
-      xi <- xi0 + xi1*temps
+      # xi <- xi0 + xi1*temps
 
     }
   }
@@ -198,17 +198,17 @@ log.like.pri.nonstat<- function(p, parnames, min, max, temps){
       xi <- p[5]
       
       p.mu0 <-  dunif( x= mu0, min = 0, max = 3000, log = TRUE)
-      p.mu1 <- dunif(x=mu1, min = -500, max = 500, log = TRUE)
-      p.sigma0 <- dunif(x = sigma0, min = 0, max = 100, log = TRUE)
+      p.mu1 <- dunif(x=mu1, min = -500, max = 1500, log = TRUE)
+      p.sigma0 <- dunif(x = sigma0, min = 0, max = 300, log = TRUE)
       p.sigma1 <- dunif(x= sigma1, min = -100, max = 100, log = TRUE)
       p.xi <- dunif(x = xi, min = -10, max = 10, log = TRUE)
       
       lpri <- p.mu0 + p.mu1 + p.sigma0 + sigma1 + p.xi
       
 
-      print('here')
-      mu <- mu0 + mu1*temps
-      sigma <- exp(sigma0 + sigma1*temps)
+      # print('here')
+      # mu <- mu0 + mu1*temps
+      # sigma <- exp(sigma0 + sigma1*temps)
 
     }
     else if(parnames[2] == 'sigma0' & parnames[4] == 'xi0'){
@@ -261,7 +261,7 @@ log.like.pri.nonstat<- function(p, parnames, min, max, temps){
 
     
     p.mu0 <-  dunif( x= mu0, min = 0, max = 3000, log = TRUE)
-    p.mu1 <-  dunif( x=mu1, min = -500, max = 500, log = TRUE)
+    p.mu1 <-  dunif( x=mu1, min = -500, max = 1500, log = TRUE)
     p.sigma0 <- dunif(x = sigma0 , min = -500, max = 500, log = TRUE)
     p.sigma1 <- dunif(x = sigma1, min = -500, max = 500, log = TRUE)
     p.xi0 <- dunif(x = xi0, min = -10, max = 10, log = TRUE)

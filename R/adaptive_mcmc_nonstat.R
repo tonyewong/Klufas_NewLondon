@@ -250,7 +250,7 @@ mcmc.xi.nonstat.parallel <- MCMC.parallel(log.post.final2, niter, initial.params
 # 
 # mcmc.xi.nonstat.parallel.post.burnin.1 <- mcmc.xi.nonstat.parallel[[1]]$samples[173e3:1e6,]
 # best.params.xi.nonstat <- which.max(mcmc.xi.nonstat.parallel[[1]]$log.p)
-
+niter <- 1e4
 initial.params <- c(500, 1000,100,75,.2)
 
 parnames <- c('mu0', 'mu1', 'sigma0', 'sigma1', 'xi')
@@ -267,19 +267,19 @@ mcmc.mu.sigma.nonstat.parallel <- MCMC.parallel(log.post.final2, niter, initial.
                                           parnames = parnames,
                                           data = tide.data$max,
                                           temps = temps$values)
-
-# my.seq <- seq(from = 3e3, to = niter, by = 1e4)
-# list.of.gelman.diags.mu.sigma <- rep(0, length(my.seq))
-# pb <- txtProgressBar(min=0,max=length(my.seq),initial=0,style=3)
-# for (i in 1:length(my.seq)){   #53e3
-#   mcmc1 <- as.mcmc(mcmc.mu.sigma.nonstat.parallel[[1]]$samples[1:my.seq[i],])
-#   mcmc2 <- as.mcmc(mcmc.mu.sigma.nonstat.parallel[[2]]$samples[1:my.seq[i],])
-#   mcmc3 <- as.mcmc(mcmc.mu.sigma.nonstat.parallel[[3]]$samples[1:my.seq[i],])
-#   mcmc.chain.list <- mcmc.list(list(mcmc1, mcmc2, mcmc3))
-#   list.of.gelman.diags.mu.sigma[i] <- gelman.diag(mcmc.chain.list)[2]
-#   setTxtProgressBar(pb, i)
-# }
-# close(pb)
+save.image('mcmc.mu.sigma.run.RData')
+my.seq <- seq(from = 3e3, to = niter, by = 1e4)
+list.of.gelman.diags.mu.sigma <- rep(0, length(my.seq))
+pb <- txtProgressBar(min=0,max=length(my.seq),initial=0,style=3)
+for (i in 1:length(my.seq)){   #53e3
+  mcmc1 <- as.mcmc(mcmc.mu.sigma.nonstat.parallel[[1]]$samples[1:my.seq[i],])
+  mcmc2 <- as.mcmc(mcmc.mu.sigma.nonstat.parallel[[2]]$samples[1:my.seq[i],])
+  mcmc3 <- as.mcmc(mcmc.mu.sigma.nonstat.parallel[[3]]$samples[1:my.seq[i],])
+  mcmc.chain.list <- mcmc.list(list(mcmc1, mcmc2, mcmc3))
+  list.of.gelman.diags.mu.sigma[i] <- gelman.diag(mcmc.chain.list)[2]
+  setTxtProgressBar(pb, i)
+}
+close(pb)
 #363e3
 
 # <<<<<<< HEAD
@@ -290,21 +290,7 @@ mcmc.mu.sigma.nonstat.parallel <- MCMC.parallel(log.post.final2, niter, initial.
 # best.params.mu.sigma.nonstat <- which.max(mcmc.mu.sigma.nonstat.parallel[[1]]$log.p)
 # >>>>>>> 549c64b859e708cff09a5842fa6597b08beb7ec9
 
-initial.params <- c(500, 50,100,.075,.2)
-parnames <- c('mu0', 'mu1', 'sigma', 'xi0','xi1')
-mcmc.mu.xi.nonstat.parallel <- MCMC.parallel(log.post.final2, niter, initial.params,
-                                                n.chain = 3,
-                                                n.cpu = 1,
-                                                scale =c(.1,.05,.2,.3,.2),
-                                                adapt = TRUE,
-                                                acc.rate = .235,
-                                                gamma = .75,
-                                                list = TRUE,
-                                                n.start = 3e3,
-                                                packages = 'extRemes',
-                                                parnames = parnames,
-                                                data = tide.data$max,
-                                                temps = temps$values)
+
 
 
 # my.seq <- seq(from = 3e3, to = niter, by = 1e4)
@@ -380,10 +366,40 @@ mcmc.sigma.xi.nonstat.parallel <- MCMC.parallel(log.post.final2, niter, initial.
 # 
 # mcmc.sigma.xi.nonstat.parallel.post.burnin.1 <- mcmc.mu.xi.nonstat.parallel[[1]]$samples[453e3:1e6,]
 # best.params.sigma.xi.nonstat <- which.max(mcmc.sigma.xi.nonstat.parallel[[1]]$log.p)
-
+niter <- 1e6
+# initial.params <- c(500, 50,100,.075,.2)
+# parnames <- c('mu0', 'mu1', 'sigma', 'xi0','xi1')
+# mcmc.mu.xi.nonstat.parallel <- MCMC.parallel(log.post.final2, niter, initial.params,
+#                                              n.chain = 3,
+#                                              n.cpu = 1,
+#                                              scale =c(.1,.05,.2,.3,.2),
+#                                              adapt = TRUE,
+#                                              acc.rate = .235,
+#                                              gamma = .75,
+#                                              list = TRUE,
+#                                              n.start = 3e3,
+#                                              packages = 'extRemes',
+#                                              parnames = parnames,
+#                                              data = tide.data$max,
+#                                              temps = temps$values)
+niter<-1e6
+initial.params <- c(500, 1000,100,75,.2)
+parnames <- c('mu0', 'mu1', 'sigma0', 'sigma1', 'xi')
+mcmc.mu.sigma.nonstat.parallel <- MCMC.parallel(log.post.final2, niter, initial.params,
+                                                n.chain = 3,
+                                                n.cpu = 1,
+                                                scale =c(.1,.05,.2,.3,.2),
+                                                adapt = TRUE,
+                                                acc.rate = .235,
+                                                gamma = .75,
+                                                list = TRUE,
+                                                n.start = 3e3,
+                                                packages = 'extRemes',
+                                                parnames = parnames,
+                                                data = tide.data$max,
+                                                temps = temps$values)
 
 initial.params <- c(500, 1000,100,75,.2, .05)
-
 parnames <- c('mu0', 'mu1', 'sigma0', 'sigma1', 'xi0', 'xi1')
 mcmc.mu.sigma.xi.nonstat.parallel <- MCMC.parallel(log.post.final2, niter, initial.params,
                                                 n.chain = 3,
@@ -398,27 +414,47 @@ mcmc.mu.sigma.xi.nonstat.parallel <- MCMC.parallel(log.post.final2, niter, initi
                                                 parnames = parnames,
                                                 data = tide.data$max,
                                                 temps = temps$values)
+save.image('mcmc.run.final.RData')
 #save.image('full.run.better.accept.rate.RData')
 #save.image('mcmc.mu_xi.rerun.RData')
 #save.image('seed.is.10.RData')
 #save.image('mcmc.run.better.RData')
-# my.seq <- seq(from = 3e3, to = niter, by = 1e4)
-# list.of.gelman.diags.mu.sigma.xi <- rep(0, length(my.seq))
-# pb <- txtProgressBar(min=0,max=length(my.seq),initial=0,style=3)
-# for (i in 1:length(my.seq)){   #53e3
-#   mcmc1 <- as.mcmc(mcmc.mu.sigma.xi.nonstat.parallel[[1]]$samples[1:my.seq[i],])
-#   mcmc2 <- as.mcmc(mcmc.mu.sigma.xi.nonstat.parallel[[2]]$samples[1:my.seq[i],])
-#   mcmc3 <- as.mcmc(mcmc.mu.sigma.xi.nonstat.parallel[[3]]$samples[1:my.seq[i],])
-#   mcmc.chain.list <- mcmc.list(list(mcmc1, mcmc2, mcmc3))
-#   list.of.gelman.diags.mu.sigma.xi[i] <- gelman.diag(mcmc.chain.list)[2]
-#   setTxtProgressBar(pb, i)
-# }
-# close(pb)
+my.seq <- seq(from = 3e3, to = niter, by = 1e4)
+list.of.gelman.diags.mu.sigma.xi <- rep(0, length(my.seq))
+pb <- txtProgressBar(min=0,max=length(my.seq),initial=0,style=3)
+for (i in 1:length(my.seq)){   #53e3
+  mcmc1 <- as.mcmc(mcmc.mu.sigma.xi.nonstat.parallel[[1]]$samples[1:my.seq[i],])
+  mcmc2 <- as.mcmc(mcmc.mu.sigma.xi.nonstat.parallel[[2]]$samples[1:my.seq[i],])
+  mcmc3 <- as.mcmc(mcmc.mu.sigma.xi.nonstat.parallel[[3]]$samples[1:my.seq[i],])
+  mcmc.chain.list <- mcmc.list(list(mcmc1, mcmc2, mcmc3))
+  list.of.gelman.diags.mu.sigma.xi[i] <- gelman.diag(mcmc.chain.list)[2]
+  setTxtProgressBar(pb, i)
+}
+close(pb)
 #453e3
 
 
-# mcmc.sigma.xi.nonstat.parallel.post.burnin.1 <- mcmc.mu.xi.nonstat.parallel[[1]]$samples[453e3:1e6,] 
-# best.params.mu.sigma.xi.nonstat <- which.max(mcmc.mu.sigma.xi.nonstat.parallel[[1]]$log.p)
+mcmc.mu.sigma.xi.nonstat.parallel.post.burnin.1 <- mcmc.mu.sigma.xi.nonstat.parallel[[1]]$samples[763e3:1e6,]
+best.params.mu.sigma.xi.nonstat <- which.max(mcmc.mu.sigma.xi.nonstat.parallel[[1]]$log.p)
+
+
+my.seq <- seq(from = 3e3, to = niter, by = 1e4)
+list.of.gelman.diags.mu.sigma <- rep(0, length(my.seq))
+pb <- txtProgressBar(min=0,max=length(my.seq),initial=0,style=3)
+for (i in 1:length(my.seq)){   #53e3
+  mcmc1 <- as.mcmc(mcmc.mu.sigma.nonstat.parallel[[1]]$samples[1:my.seq[i],])
+  mcmc2 <- as.mcmc(mcmc.mu.sigma.nonstat.parallel[[2]]$samples[1:my.seq[i],])
+  mcmc3 <- as.mcmc(mcmc.mu.sigma.nonstat.parallel[[3]]$samples[1:my.seq[i],])
+  mcmc.chain.list <- mcmc.list(list(mcmc1, mcmc2, mcmc3))
+  list.of.gelman.diags.mu.sigma[i] <- gelman.diag(mcmc.chain.list)[2]
+  setTxtProgressBar(pb, i)
+}
+close(pb)
+
+mcmc.mu.sigma.nonstat.parallel.post.burnin.1 <- mcmc.mu.sigma.nonstat.parallel[[1]]$samples[383e3:1e6,]
+best.params.mu.sigma.xi.nonstat <- which.max(mcmc.mu.sigma.nonstat.parallel[[1]]$log.p)
+
+save.image('mcmc.final.run.RData')
 #save.image('mcmc.rerun3.RData')
 #save.image('mcmc.rerun2.RData')
 
@@ -554,10 +590,10 @@ for (i in 1:length(my.seq)){   #53e3
 close(pb)
 #113e3
 
-mcmc.xi.nonstat.parallel.post.burnin.1 <- mcmc.xi.nonstat.parallel[[1]]$samples[113e3:1e6,] 
+mcmc.xi.nonstat.parallel.post.burnin.1 <- mcmc.xi.nonstat.parallel[[1]]$samples[93e3:1e6,] 
 best.params.xi.nonstat <- which.max(mcmc.xi.nonstat.parallel[[1]]$log.p)
 
-#mu & sigma non stat
+#mu & sigma non stat #NEEED TO COME BACK HERE
 my.seq <- seq(from = 3e3, to = niter, by = 1e4)
 list.of.gelman.diags.mu.sigma <- rep(0, length(my.seq))
 pb <- txtProgressBar(min=0,max=length(my.seq),initial=0,style=3)
@@ -569,11 +605,11 @@ for (i in 1:length(my.seq)){   #53e3
   list.of.gelman.diags.mu.sigma[i] <- gelman.diag(mcmc.chain.list)[2]
   setTxtProgressBar(pb, i)
 }
-close(pb)
-#433e3
-
-mcmc.mu.sigma.nonstat.parallel.post.burnin.1 <- mcmc.mu.sigma.nonstat.parallel[[1]]$samples[433e3:1e6,] 
-best.params.mu.sigma.nonstat <- which.max(mcmc.mu.sigma.nonstat.parallel[[1]]$log.p)
+# close(pb)
+# #433e3
+#
+# mcmc.mu.sigma.nonstat.parallel.post.burnin.1 <- mcmc.mu.sigma.nonstat.parallel[[1]]$samples[433e3:1e6,]
+# best.params.mu.sigma.nonstat <- which.max(mcmc.mu.sigma.nonstat.parallel[[1]]$log.p)
 
 #mu & xi non stat 
 my.seq <- seq(from = 3e3, to = niter, by = 1e4)
@@ -590,7 +626,7 @@ for (i in 1:length(my.seq)){   #53e3
 close(pb)
 #123e3
 
-mcmc.mu.xi.nonstat.parallel.post.burnin.1 <- mcmc.mu.xi.nonstat.parallel[[1]]$samples[123e3:1e6,] 
+mcmc.mu.xi.nonstat.parallel.post.burnin.1 <- mcmc.mu.xi.nonstat.parallel[[1]]$samples[63e3:1e6,] 
 best.params.mu.xi.nonstat <- which.max(mcmc.mu.xi.nonstat.parallel[[1]]$log.p)
 
 #sigma and xi non stat 
@@ -608,7 +644,7 @@ for (i in 1:length(my.seq)){   #53e3
 close(pb)
 #453e3
 
-mcmc.sigma.xi.nonstat.parallel.post.burnin.1 <- mcmc.mu.xi.nonstat.parallel[[1]]$samples[1:1e5,] 
+mcmc.sigma.xi.nonstat.parallel.post.burnin.1 <- mcmc.mu.xi.nonstat.parallel[[1]]$samples[93e3:1e6,] 
 best.params.sigma.xi.nonstat <- which.max(mcmc.sigma.xi.nonstat.parallel[[1]]$log.p)
 
 #all non stat 
@@ -631,7 +667,7 @@ best.params.mu.sigma.xi.nonstat <- which.max(mcmc.mu.sigma.xi.nonstat.parallel[[
 
 #save.image('post.burnin.iter1e5.RData')
 #save.image('post.burnin.iter1e52.RData')
-save.image('post.burnin.iter1e6.RData')
+save.image('post.burnin.iter1e6.better.RData')
 
                                 #  acc.rate = .44,
                                  # n.start=3e3,

@@ -6,17 +6,22 @@
 # Script in order to read NOAA temperature data
 
 
-read.temp.data <- function(start, end){
+read.temp.data <- function(city.years){
   #sets working directory for script
   setwd('~/codes/Klufas_NewLondon/')
 
   #read temp data
-  start <- start-1880
-  end <- end-1880
+  #start <- start-1880
+  #end <- end-1880
   temp.data <- read.table('noaa-temp-1880-2017.csv', header = TRUE, sep=',')
-  temp.years <- temp.data$Year[start:end]
-  temp.values <- temp.data$Value[start:end]     #limit temp data to just the years I am working with
+  temp.years <- rep(0,length(city.years))
+  temp.values <- rep(0,length(city.years))     #limit temp data to just the years I am working with
 
+  for(i in 1:length(city.years)){
+    ind <- which(city.years[i] == temp.data$Year)
+    temp.years[i] <- temp.data$Year[[ind]]
+    temp.values[i] <- temp.data$Value[[ind]]
+  }
 #read.temp.data <- function(years.use){
   #sets working directory for script
   #setwd('~/codes/Klufas_NewLondon/')

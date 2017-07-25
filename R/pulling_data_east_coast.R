@@ -44,6 +44,13 @@ colnames(NewYorkCity) <- c('Year', 'Month', 'Day', 'Hour', 'Sea_Level')
 Portland <- read.csv(paste(dat.dir,files.tg[10],sep=''), header=TRUE, sep=septype)
 colnames(Portland) <- c('Year', 'Month', 'Day', 'Hour', 'Sea_Level')
 
+
+setwd('~/codes/Klufas_NewLondon/')
+dat.dir <- './data/'
+files.tg2 <- list.files(path=dat.dir,pattern=filetype)
+NewLondon <- read.csv(paste(dat.dir, files.tg2, sep=''), header = TRUE, sep = septype)
+colnames(NewLondon) <- c('Year','Month','Day','Hour','Sea_Level')
+setwd('~/codes/Klufas_NewLondon/')
 #city.list <- c(AtlanticCity, Boston,Charleston,ChesapeakeBay,DuckPier,Lewes,Montauk,Newport,NewYorkCity , Portland) 
 
 read.data <- function (city){
@@ -56,18 +63,118 @@ read.data <- function (city){
   lsl.max       <- rep(0,length(n.years)) #max(data$lsl.norm[ind.thisyear])
   city$lsl.norm <- rep(NA,length(years))
 
-
+  
+  #EXTRA ADDED STUFF ___________________________________
+  #get all of the hours out of data 
+  hours <- city$Hour
+  #get the unique hours  expect there to be 24 (and there are!))
+  hours.unique <- unique(hours)
+  n.hours <- length(hours)
+  
+  #finding the difference in hours
+  hour.diff <- diff(hours)
+  #cheking to see if any places dont have numbers
+  for (i in 1:n.hours){
+    if (is.nan(hour.diff[i])){
+      print("help")
+    }
+  }
+  #conclusion - no nans 
+  
+  #for loop through all hours 
+  
+  #the hours that are weird
+  day.counter <- 0
+  month.counter <- 0
+  #subtracting one to make it the same length as the differnece in hours 
+  num <- 1
+  hours.strange <- rep(0, length(n.hours)) 
+   
+  for (i in 1:(n.hours-1)){
+    #print(hour.diff[i])
+    #checking if difference between hours is not 1 or -23, will print 'index of data pt that has problem', else does nothing 
+    if (hour.diff[i] != 1 & hour.diff[i] != -23){
+      print(i+1)
+      #the list of all of the weird hour gaps in the data 
+      hours.strange[num] <- i+1
+      num <- num + 1
+    }
+  }
+  
+  #now to check how big the gap is 
+  days <- city$Day
+  day.unique <- unique(days)
+  n.days <- length(days)
+  
+  #also need to check to see if there is a month gap because that could also pose the same type of problem 
+  
+  months <- city$Month
+  n.month <- length(months)
+  
+ 
+  #look at each index and the one after and check to see if days are within a day of each other 
+  # if so - check hour difference 
+  #else - check if in different months - cases -31, -30, -28, -29 (for feb)
+  #go through the list of weird numbers we have 
+  for (j in 1:length(hours.strange)){
+    #need to check within the same day of each other - so that would be seeing if the difference between the days is 0 
+    #index we will be using comes from the list that we just made (the list hours.strange)
+    ind <- hours.strange[[j]]
+    #print(j)
+    # print(ind)
+    #if the difference between the two data pts is in the same day #lets ignore it 
+    # print(days[ind])
+    if ((days[ind]-days[ind-1] ) == 0 & (months[ind] - months[ind-1]) == 0){
+      print("in the same day")
+    }else if(years[ind]- years[ind-1] > 1){
+      print("big gap here**************************************************")
+      print(ind)
+    }else if ((months[ind] - months[ind-1]) >= 1 | (months[ind] - months[ind-1]) <= -1) { #if month gap greater than 1, make note of it
+      if (abs(years[ind]- years[ind-1] > 1)){
+        print("month gap greater than or equal to 1")
+        print(abs(months[ind] - months[ind-1]))
+        print(ind)
+        month.counter <- month.counter + abs(months[ind] - months[ind-1])
+      }}
+    #when the days are not the same , need to check how far apart 
+    else {
+      print("no month gap, only day gap")
+      print(days[ind]-days[ind-1])
+      day.counter <- day.counter + days[ind]-days[ind-1]
+      print(day.counter)
+    }
+  }
+  
+  #EXTRA ADDED STUFF ___________________________________
 ##----------Finding Annual Block Maxima----------------------
 #started at 2 so that the data the data stuff would start at 1939 not 1938 
   for (tt in 1:n.years) {
     ind.thisyear <- which(years==years.unique[tt])
-    lsl.mean[tt] <- mean(city$Sea_Level[ind.thisyear])
-    city$lsl.norm[ind.thisyear] <- city$Sea_Level[ind.thisyear] - lsl.mean[tt]
-    lsl.max[tt] <- max(city$lsl.norm[ind.thisyear])
+    if (length(ind.thisyear) >= 7884){
+      lsl.mean[tt] <- mean(city$Sea_Level[ind.thisyear])
+      city$lsl.norm[ind.thisyear] <- city$Sea_Level[ind.thisyear] - lsl.mean[tt]
+      lsl.max[tt] <- max(city$lsl.norm[ind.thisyear])
+    } #90% of number of hours in a year 
+    else{
+      lsl.mean[tt] <- 0 
+      city$lsl.norm[ind.thisyear] <- 0 
+      lsl.max[tt] <- 0
+    }
   }
-  city.data$years <- years.unique 
-  city.data$max <- lsl.max
-  city.data$mean <- lsl.mean
+  
+  #for(q in 1:length(years.unique)){
+  ind <- which(lsl.max != 0)
+  years.shift <- years.unique[ind]
+  sl <- lsl.max[ind]
+  sl.mean <- lsl.mean[ind]
+    
+  #}
+  
+  
+  city.data$years <- years.shift 
+  city.data$max <- sl
+  city.data$mean <- sl.mean
+  
   
   return(city.data)
 }
@@ -82,8 +189,8 @@ charleston <- read.data(Charleston)
 duck.pier <- read.data(DuckPier)
 montauk <- read.data(Montauk)
 newport <- read.data(Newport)
-
-
+new.london <- read.data(NewLondon)
+save.image('all.loc.less.year.RData')
 
 library(ismev)
 library(zoo)
@@ -157,21 +264,21 @@ lower.bound <- list(c(0,0,-5),
                  c(0, -100, 0, -1, -10),
                  c(0,-100, 0, -100, -1, -1)
                  )
-upper.bound <- list(c(3000,3000,5),
-                 c(3000,1000, 1000, 5),
-                 c(3000, 1000, 1000, 1000),
-                 c(3000, 1000 , 100, 100),
-                 c(3000,100, 1000, 10 , 5),
-                 c(3000, 1000, 10 , 1, 1),
-                 c(3000, 100, 1000, 10, 10),
-                 c(3000,100, 1000, 10 , 1, 1)
+upper.bound <- list(c(4000,3000,5),
+                 c(4000,1000, 1000, 5),
+                 c(4000, 1000, 1000, 1000),
+                 c(4000, 1000 , 100, 100),
+                 c(4000,100, 1000, 10 , 5),
+                 c(4000, 1000, 10 , 1, 1),
+                 c(4000, 100, 1000, 10, 10),
+                 c(4000,100, 1000, 10 , 1, 1)
                  )
 
 get.prior.estimates <- function(city, city.temps){
   #for (i in 1:2){
   
     sublist <- vector('list', 8)
-    sublist2 <- vector('list', 8)
+    #sublist2 <- vector('list', 8)
     names(sublist) <- other.p.names
      for (j in 1: length(all.p.names)){
       print(j)
@@ -182,29 +289,31 @@ get.prior.estimates <- function(city, city.temps){
                                   temps = city.temps$values, 
                                   parnames = all.p.names[[j]])
         sublist[[other.p.names[j]]] <- optim.like$optim$bestmem
-        sublist2[[tmp[j]]] <- optim.like$member$bestmemit
+        #sublist2[[tmp[j]]] <- optim.like$member$bestmemit
     }
     #optim.gev.fit$city.names[i] <- sublist
-    double.list <- vector('list', 2)
-    names(double.list) <- c('sublist', 'sublist2')
-    double.list$sublist <- sublist
-    double.list$sublist2 <- sublist2
-  return(double.list)
+    #ouble.list <- vector('list', 2)
+    #names(double.list) <- c('sublist', 'sublist2')
+   # double.list$sublist <- sublist
+    #double.list$sublist2 <- sublist2
+  return(sublist)
   }
 
 setwd('~/codes/Klufas_NewLondon/R/')
 source('read_temp_data.R')
 #get the temps from all of the cities
-boston.temps <- read.temp.data(1921, 2014)
-atlantic.city.temps <- read.temp.data(1911,2014)
-charleston.temps <- read.temp.data(1921, 2017)
-montauk.temps <- read.temp.data(1959, 2014)
-chesapeake.bay.temps <- read.temp.data(1975,2014)
-lewes.temps <- read.temp.data(1957,2014)
-new.york.city.temps <- read.temp.data(1920, 2014)
-portland.temps <- read.temp.data(1910, 2014)
-duck.pier.temps <- read.temp.data(1978, 2017)
-newport.temps <- read.temp.data(1910, 2014)
+boston.temps <- read.temp.data(boston$years)
+atlantic.city.temps <- read.temp.data(atlantic.city$years)
+charleston.temps <- read.temp.data(charleston$years)
+montauk.temps <- read.temp.data(montauk$years)
+chesapeake.bay.temps <- read.temp.data(chesapeake.bay$years)
+lewes.temps <- read.temp.data(lewes$years)
+new.york.city.temps <- read.temp.data(new.york.city$years)
+portland.temps <- read.temp.data(portland$years)
+duck.pier.temps <- read.temp.data(duck.pier$years)
+newport.temps <- read.temp.data(newport$years)
+new.london.temps <- read.temp.data(new.london$years)
+save.image('new.temps.RData')
 
 boston.priors.2 <- get.prior.estimates(boston, boston.temps)
 portland.priors.2 <- get.prior.estimates(portland,portland.temps)
@@ -446,7 +555,7 @@ library(fitdistrplus)
 dist <- fitdistr(mu1.all.nonstat, 'normal')
 plot(dist)
 
-save.image('east.coast.RData')
+#save.image('east.coast.RData')
 
 mu0.mu.sig.nonstat <- c(boston.priors$mu.sigma[1], 
                        atlantic.city.priors$mu.sigma[1], 
@@ -510,141 +619,148 @@ row4 <- c(19,20,21,22,23,24)
 
 c<- rbind(row1, row2, row3, row4)
 layout (c)
-par(mar = c(.25,.25,.25,.25), oma = c(3,10,3,1))
+par(mar = c(.25,.25,.25,.25), oma = c(10,4,1,1))
 
 #Stationary------------------------------------
-par(mar = c(.25,.25,2,.25))
-hist(mu.all.stat, freq = FALSE, main = expression(mu[0]), xlab = '', ylab = '', cex.lab = 2, 
-     yaxt = 'n',  cex.main = 1.5, xlim = c(500,3000))
+par(mar = c(.25,1,2,1))
+hist(mu.all.stat, freq = FALSE, xlab = '', ylab = '', cex.lab = 2, 
+     yaxt = 'n',  cex.main = 2, cex.axis = 1.5, main = '')
 #title(expresion(mu[0]))
 mu.gamma <- fitdistr(mu.all.stat, 'gamma')
 mu.seq <- seq(from = min (mu.all.stat) - 500, to = max(mu.all.stat) + 700, by = 1)
-lines(mu.seq, dgamma(mu.seq, shape = mu.gamma$estimate[1], rate = mu.gamma$estimate[2]), col = 'red')
-mtext(text ='All Stationary  ', side = 2, cex = .75, las = 1)
+lines(mu.seq, dgamma(mu.seq, shape = mu.gamma$estimate[1], rate = mu.gamma$estimate[2]), col = 'red', lwd = 2)
+mtext(text ='ST', side = 2, las = 1, line = 1, cex = 1.25)
 
 plot.new()
-mtext(text = expression(mu[1]), line = .5)
+#mtext(text = expression(mu[1]), line = 0, cex = 1.5)
 
-hist(sigma.all.stat, freq = FALSE, main=expression(sigma[0]), xlab = expression(sigma), 
-     ylab = '', cex.lab = 2, yaxt = 'n', cex.main = 1.5, xlim = c(0, 900))
+hist(sigma.all.stat, freq = FALSE, xlab = expression(sigma), 
+     ylab = '', cex.lab = 2, yaxt = 'n', cex.main = 2, cex.axis = 1.5, main = '')
 sigma.gamma <- fitdistr(sigma.all.stat, 'gamma')
 seq.sigma <- seq(from = min(sigma.all.stat)-200, to = max(sigma.all.stat)+700, by =1)
-lines( seq.sigma, dgamma(seq.sigma, shape = sigma.gamma$estimate[1], rate = sigma.gamma$estimate[2] ), col = 'red') 
+lines( seq.sigma, dgamma(seq.sigma, shape = sigma.gamma$estimate[1], rate = sigma.gamma$estimate[2] ), col = 'red', lwd = 2) 
 
 plot.new()
-mtext(text = expression(sigma[1]), line = .5)
+#mtext(text = expression(sigma[1]), line = 0, cex = 1.5)
 
-hist(xi.all.stat, freq = FALSE, main =expression(xi[0]), xlab = expression(xi), 
-     ylab = '' ,cex.lab = 2, yaxt = 'n', cex.main = 1.5, xlim = c(-5, 2))
+hist(xi.all.stat, freq = FALSE,  xlab = expression(xi), 
+     ylab = '' ,cex.lab = 2, yaxt = 'n', cex.main = 2, cex.axis = 1.5, main = '')
 sd <- sd(xi.all.stat)
 mean <- mean(xi.all.stat)
 seq.xi <- seq(from =min(xi.all.stat) - 5, to =max(xi.all.stat) + 2, by = .01)
-lines(seq.xi, dnorm(seq.xi, mean = mean, sd = sd), col = 'red')
+lines(seq.xi, dnorm(seq.xi, mean = mean, sd = sd), col = 'red', lwd = 2)
 
 
 plot.new()
-mtext(text = expression(xi[1]), line = .5)
+#mtext(text = expression(xi[1]), line = 0, cex = 1.5)
 #Mu NOn Stationary------------------------------------ 
 hist(mu0.mu.nonstat, freq= FALSE, main = '', xlab = expression(mu[0]), ylab = '', cex.lab = 1.5, 
-     yaxt = 'n',  xlim = c(500,3000)) 
+     yaxt = 'n', cex.axis = 1.5) 
 mu0.gamma <- fitdistr(mu0.mu.nonstat, 'gamma')
 mu0.seq <- seq(from = min (mu0.mu.nonstat) - 500, to = max(mu0.mu.nonstat) + 700, by = 1)
-lines(mu0.seq, dgamma(mu0.seq, shape = mu0.gamma$estimate[1], rate = mu0.gamma$estimate[2]), col = 'red')
-mtext(text ='Mu Non-Stationary  ', side = 2, cex = .75, las = 1)
+lines(mu0.seq, dgamma(mu0.seq, shape = mu0.gamma$estimate[1], rate = mu0.gamma$estimate[2]), col = 'red', lwd = 2)
+mtext(text ='NS1', side = 2, las = 1, line = 1, cex = 1.25)
 
 hist(mu1.mu.nonstat, freq= FALSE, main = '', xlab = expression(mu[1]), ylab = '', cex.lab = 1.5, 
-     yaxt = 'n', xlim = c(-200, 1000))
+     yaxt = 'n', cex.axis = 1.5)
 sd <- sd(mu1.mu.nonstat)
 mean <- mean(mu1.mu.nonstat)
 mu1.seq <- seq(from = min (mu1.mu.nonstat) - 200, to = max(mu1.mu.nonstat) + 300, by = 1)
-lines(mu1.seq, dnorm(mu1.seq, mean = mean, sd = sd), col = 'red')
+lines(mu1.seq, dnorm(mu1.seq, mean = mean, sd = sd), col = 'red', lwd = 2)
 
 hist(sigma.mu.nonstat, freq= FALSE, main = '', xlab = expression(sigma), ylab = '', cex.lab = 1.5, 
-     yaxt = 'n', xlim = c(0, 900))
+     yaxt = 'n', cex.axis = 1.5)
 sigma.gamma <- fitdistr(sigma.mu.nonstat, 'gamma')
 sigma.seq <- seq(from = min (sigma.mu.nonstat) - 100, to = max(sigma.mu.nonstat) + 300, by = 1)
-lines(sigma.seq, dgamma(sigma.seq, shape = sigma.gamma$estimate[1], rate = sigma.gamma$estimate[2]), col = 'red')
+lines(sigma.seq, dgamma(sigma.seq, shape = sigma.gamma$estimate[1], rate = sigma.gamma$estimate[2]), col = 'red', lwd = 2)
 
 plot.new()
 
-hist(xi.mu.nonstat, freq= FALSE, main = '', xlab = expression(xi), ylab = '', cex.lab = 1.5, yaxt = 'n',
-     xlim = c(-5, 2))
+hist(xi.mu.nonstat, freq= FALSE, main = '', xlab = expression(xi), ylab = '', cex.lab = 1.5, 
+     yaxt = 'n', cex.axis = 1.5)
 sd <- sd(xi.mu.nonstat)
 mean <- mean(xi.mu.nonstat)
 seq.xi <- seq(from =min(xi.mu.nonstat) - 1, to =max(xi.mu.nonstat) + 1, by = .01)
-lines(seq.xi, dnorm(seq.xi, mean = mean, sd = sd), col = 'red')
+lines(seq.xi, dnorm(seq.xi, mean = mean, sd = sd), col = 'red', lwd = 2)
 
 plot.new()
 
 #------------------------------------ 
 #mu, Sig, Non Stationary ------------------------ 
-hist(mu0.mu.sig.nonstat, freq = FALSE, main = '', yaxt = 'n', xlim = c(500,3000))
+hist(mu0.mu.sig.nonstat, freq = FALSE, main = '', yaxt = 'n', cex.axis = 1.5)
 mu0.gamma <- fitdistr(mu0.mu.sig.nonstat, 'gamma')
 mu0.seq <- seq(from = min (mu0.mu.sig.nonstat) - 500, to = max(mu0.mu.sig.nonstat) + 300, by = 1)
-lines(mu0.seq, dgamma(mu0.seq, shape = mu0.gamma$estimate[1], rate = mu0.gamma$estimate[2]), col = 'red')
-mtext(text ='Mu, Sigma  \nNon-Stationary  ', side = 2, cex = .75, las = 1)
+lines(mu0.seq, dgamma(mu0.seq, shape = mu0.gamma$estimate[1], rate = mu0.gamma$estimate[2]), col = 'red', lwd = 2)
+mtext(text = 'NS2', side = 2,  las = 1, line = 1, cex = 1.25)
 
-hist(mu1.mu.sig.nonstat, freq = FALSE, main = '', yaxt = 'n', xlim = c(-200, 1000))
+hist(mu1.mu.sig.nonstat, freq = FALSE, main = '', yaxt = 'n', cex.axis = 1.5)
 mean <- mean(mu1.mu.sig.nonstat)
 sd <- sd(mu1.mu.sig.nonstat)
 mu1.seq <- seq(from = min (mu1.mu.sig.nonstat)- 150, to = max(mu1.mu.sig.nonstat)+900, by = 1 )
-lines(mu1.seq, dnorm(mu1.seq, mean = mean, sd = sd), col = 'red')
+lines(mu1.seq, dnorm(mu1.seq, mean = mean, sd = sd), col = 'red', lwd = 2)
 
-hist(sig0.mu.sig.nonstat, freq = FALSE, main = '', yaxt = 'n', xlim = c(0, 900))
+hist(sig0.mu.sig.nonstat, freq = FALSE, main = '', yaxt = 'n', cex.axis = 1.5, ylim = c(0,.02))
 sig0.gamma <- fitdistr(sig0.mu.sig.nonstat, 'gamma')
 sig0.seq <- seq(from = min (sig0.mu.sig.nonstat) - 100, to = max(sig0.mu.sig.nonstat) + 300, by = 1)
-lines(sig0.seq, dgamma(sig0.seq, shape = sig0.gamma$estimate[1], rate = sig0.gamma$estimate[2]), col = 'red')
+lines(sig0.seq, dgamma(sig0.seq, shape = sig0.gamma$estimate[1], rate = sig0.gamma$estimate[2]), col = 'red', lwd = 2)
 
-hist(sig1.mu.sig.nonstat, freq = FALSE, main = '', yaxt = 'n', xlim = c(-50, 10))
+hist(sig1.mu.sig.nonstat, freq = FALSE, main = '', yaxt = 'n', cex.axis = 1.5)
 mean <- mean(sig1.mu.sig.nonstat)
 sd <- sd(sig1.mu.sig.nonstat)
 sig1.seq <- seq(from = min(sig1.mu.sig.nonstat) - 10, to = max(sig1.mu.sig.nonstat) + 20, by = 1)
-lines(sig1.seq, dnorm(sig1.seq, mean = mean, sd = sd), col = 'red')
+lines(sig1.seq, dnorm(sig1.seq, mean = mean, sd = sd), col = 'red', lwd = 2)
 
-hist(xi0.mu.sig.nonstat, freq = FALSE, main = '', yaxt = 'n', xlim = c(-5, 2))
+hist(xi0.mu.sig.nonstat, freq = FALSE, main = '', yaxt = 'n', cex.axis = 1.5)
 mean <- mean(xi0.mu.sig.nonstat)
 sd <- sd(xi0.mu.sig.nonstat)
 xi0.seq <- seq(from = min (xi0.mu.sig.nonstat) - 2, to = max(xi0.mu.sig.nonstat) + .5, by = .05)
-lines(xi0.seq, dnorm (xi0.seq , mean = mean, sd = sd), col = 'red')
+lines(xi0.seq, dnorm (xi0.seq , mean = mean, sd = sd), col = 'red', lwd = 2)
 
 plot.new()
 
 #------------------------------------
 #All Non Stationary ------------------ 
-hist(mu0.all.nonstat, freq= FALSE, main = '', yaxt = 'n', xlim = c(500,3000)) 
+hist(mu0.all.nonstat, freq= FALSE, main = '', yaxt = 'n', cex.axis = 1.5) 
 mu0.gamma <- fitdistr(mu0.mu.nonstat, 'gamma')
 mu0.seq <- seq(from = min (mu0.mu.nonstat) - 500, to = max(mu0.mu.nonstat) + 500, by = 1)
-lines(mu0.seq, dgamma(mu0.seq, shape = mu0.gamma$estimate[1], rate = mu0.gamma$estimate[2]), col = 'red')
-mtext(text ='All Non-Stationary', side = 2, cex = .75, las = 1)
+lines(mu0.seq, dgamma(mu0.seq, shape = mu0.gamma$estimate[1], rate = mu0.gamma$estimate[2]), col = 'red', lwd = 2)
+mtext(text ='NS3', side = 2,  las = 1, line = 1, cex = 1.25)
+mtext(text=expression(mu[0]), cex = 2, side = 1, line = 4)
 
-hist(mu1.all.nonstat, freq= FALSE, main = '', yaxt = 'n',xlim = c(-200, 1000))
+hist(mu1.all.nonstat, freq= FALSE, main = '', yaxt = 'n', cex.axis = 1.5)
 mean <- mean(mu1.all.nonstat)
 sd <- sd(mu1.all.nonstat)
 mu1.all.nonstat.seq <- seq(from = min(mu1.all.nonstat) -150, to = max(mu1.all.nonstat) + 900 , by = 1)
-lines(mu1.all.nonstat.seq, dnorm(mu1.all.nonstat.seq, mean = mean, sd = sd), col = 'red')
+lines(mu1.all.nonstat.seq, dnorm(mu1.all.nonstat.seq, mean = mean, sd = sd), col = 'red', lwd = 2)
+mtext(text=expression(mu[1]), cex = 2, side = 1, line = 4)
 
-hist(sigma0.all.nonstat, freq= FALSE, main = '', yaxt = 'n', xlim = c(0, 900))
+hist(sigma0.all.nonstat, freq= FALSE, main = '', yaxt = 'n', cex.axis = 1.5, xlim = c(3.5, 5.5), breaks =7)
 sigma0.gamma <- fitdistr(sigma0.all.nonstat, 'gamma')
-sigma0.seq <- seq(from = min (sigma0.all.nonstat) - 30, to = max(sigma0.all.nonstat) + 900, by = .05)
-lines(sigma0.seq, dgamma(sigma0.seq, shape = sigma0.gamma$estimate[1], rate = sigma0.gamma$estimate[2]), col = 'red')
+sigma0.seq <- seq(from = min (sigma0.all.nonstat) - 30, to = max(sigma0.all.nonstat) + 10, by = .05)
+lines(sigma0.seq, dgamma(sigma0.seq, shape = sigma0.gamma$estimate[1], rate = sigma0.gamma$estimate[2]), col = 'red', lwd = 2)
+mtext(text=expression(sigma[0]), cex = 2, side = 1, line = 4)
 
-hist(sigma1.all.nonstat, freq= FALSE, main = '', yaxt = 'n',xlim = c(-50, 10))
+hist(sigma1.all.nonstat, freq= FALSE, main = '', yaxt = 'n', cex.axis = 1.5)
 mean <- mean(sigma1.all.nonstat)
 sd <- sd(sigma1.all.nonstat)
 sigma1.seq <- seq(from = min (sigma1.all.nonstat) - 50, to = max(sigma1.all.nonstat) + 10, by = .05)
-lines(sigma1.seq, dnorm(sigma1.seq, mean = mean, sd = sd), col = 'red')
+lines(sigma1.seq, dnorm(sigma1.seq, mean = mean, sd = sd), col = 'red', lwd = 2)
+mtext(text=expression(sigma[1]), cex = 2, side = 1, line = 4)
 
-hist(xi0.all.nonstat, freq= FALSE, main = '', yaxt = 'n', xlim = c(-5, 2))
+hist(xi0.all.nonstat, freq= FALSE, main = '', yaxt = 'n', cex.axis = 1.5)
 mean <- mean(xi0.all.nonstat)
 sd <- sd(xi0.all.nonstat)
 xi0.seq <- seq(from = min(xi0.all.nonstat) - 5, to = max(xi0.all.nonstat) + 3, by = .05)
-lines(xi0.seq, dnorm(xi0.seq, mean = mean, sd = sd), col = 'red')
+lines(xi0.seq, dnorm(xi0.seq, mean = mean, sd = sd), col = 'red', lwd = 2)
+mtext(text=expression(xi[0]), cex = 2, side = 1, line = 4)
 
-hist(xi1.all.nonstat, freq= FALSE, main = '', yaxt = 'n')
+hist(xi1.all.nonstat, freq= FALSE, main = '', yaxt = 'n', cex.axis = 1.5)
 mean <- mean(xi1.all.nonstat)
 sd <- sd(xi1.all.nonstat)
 xi1.seq <- seq(from = min (xi1.all.nonstat) - .2, to = max(xi1.all.nonstat) + .2, by = .05)
-lines(xi1.seq, dnorm(xi1.seq, mean = mean, sd = sd), col = 'red')
+lines(xi1.seq, dnorm(xi1.seq, mean = mean, sd = sd), col = 'red', lwd = 2)
+mtext(text=expression(xi[1]), cex = 2,side = 1, line = 4)
 
-mtext(text = 'MLE Distributions of GEV Parameters of Different Tide Stations', outer = TRUE)
+#mtext(text = 'MLE Distributions of Different Tide Stations', outer = TRUE, cex = 1.5, line = 1)
+mtext(text = 'Parameter Values', side = 1, outer = TRUE, line = 6, cex = 1.25)
 #------------------------------------

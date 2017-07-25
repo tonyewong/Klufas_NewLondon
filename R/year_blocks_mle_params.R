@@ -56,7 +56,7 @@ get.prior.estimates <- function(city, city.temps){
   #for (i in 1:2){
   
   sublist <- vector('list', 8)
-  sublist2 <- vector('list', 8)
+  
   names(sublist) <- other.p.names
   for (j in 1: length(all.p.names)){
     print(j)
@@ -67,14 +67,11 @@ get.prior.estimates <- function(city, city.temps){
                           temps = city.temps, 
                           parnames = all.p.names[[j]])
     sublist[[other.p.names[j]]] <- optim.like$optim$bestmem
-    sublist2[[tmp[j]]] <- optim.like$member$bestmemit
+    
   }
   #optim.gev.fit$city.names[i] <- sublist
-  double.list <- vector('list', 2)
-  names(double.list) <- c('sublist', 'sublist2')
-  double.list$sublist <- sublist
-  double.list$sublist2 <- sublist2
-  return(double.list)
+
+  return(sublist)
 }
 #New London Plots-----------------------------------------------------------------------------------
 new.london.30 <- get.prior.estimates(tide.data$max[46:76], temps$values[46:76])
@@ -156,49 +153,45 @@ points(45,new.london.30$mu.sigma.xi[6], col = 'red')
 points(60,new.london.30$mu.sigma.xi[6], col = 'blue')
 points(76,new.london.30$mu.sigma.xi[6], col = 'green')
 #-----------------------------------------------------------------------------------
-
+#load('all.loc.less.year.RData')
+#load('new.temps.RData')
 #load('east.coast.RData')
-new.london.10 <- get.prior.estimates(tide.data$max[66:76], temps$values[66:76])
-new.london.20 <- get.prior.estimates(tide.data$max[56:76], temps$values[56:76])
-new.london.30 <- get.prior.estimates(tide.data$max[46:76], temps$values[46:76])
-new.london.40 <- get.prior.estimates(tide.data$max[36:76], temps$values[36:76])
-new.london.50 <- get.prior.estimates(tide.data$max[26:76], temps$values[26:76])
-new.london.60 <- get.prior.estimates(tide.data$max[16:76], temps$values[16:76])
-new.london.all <- get.prior.estimates(tide.data$max, temps$values)
-save.image('nl.re.run.RData')
+new.london.10 <- get.prior.estimates(new.london$max[56:66], new.london.temps$values[56:66])
+new.london.20 <- get.prior.estimates(new.london$max[46:66], new.london.temps$values[46:66])
+new.london.30 <- get.prior.estimates(new.london$max[36:66], new.london.temps$values[36:66])
+new.london.40 <- get.prior.estimates(new.london$max[26:66], new.london.temps$values[26:66])
+new.london.50 <- get.prior.estimates(new.london$max[16:66], new.london.temps$values[16:66])
+new.london.all <- get.prior.estimates(new.london$max, new.london.temps$values)
+#save.image('nl.re.run.RData')
 
-boston.10 <- get.prior.estimates(boston$max[84:94], boston.temps$values[84:94])
-boston.20 <- get.prior.estimates(boston$max[74:94], boston.temps$values[74:94])
-boston.30 <- get.prior.estimates(boston$max[64:94], boston.temps$values[64:94])
-boston.40 <- get.prior.estimates(boston$max[54:94], boston.temps$values[54:94])
-boston.50 <- get.prior.estimates(boston$max[44:94], boston.temps$values[44:94])
-boston.60 <- get.prior.estimates(boston$max[34:94], boston.temps$values[34:94])
-boston.70 <- get.prior.estimates(boston$max[24:94], boston.temps$values[24:94])
-boston.80 <- get.prior.estimates(boston$max[14:94], boston.temps$values[14:94])
+boston.10 <- get.prior.estimates(boston$max[81:91], boston.temps$values[81:91])
+boston.20 <- get.prior.estimates(boston$max[71:91], boston.temps$values[71:91])
+boston.30 <- get.prior.estimates(boston$max[61:91], boston.temps$values[61:91])
+boston.40 <- get.prior.estimates(boston$max[51:91], boston.temps$values[51:91])
+boston.50 <- get.prior.estimates(boston$max[41:91], boston.temps$values[41:91])
+boston.60 <- get.prior.estimates(boston$max[31:91], boston.temps$values[31:91])
+boston.70 <- get.prior.estimates(boston$max[21:91], boston.temps$values[21:91])
+#boston.80 <- get.prior.estimates(boston$max[11:91], boston.temps$values[11:91])
 boston.all <- get.prior.estimates(boston$max, boston.temps$values)
 
-atlantic.city.10 <-  get.prior.estimates(atlantic.city$max[93:103], atlantic.city.temps$values[93:103])
-atlantic.city.20 <-  get.prior.estimates(atlantic.city$max[83:103], atlantic.city.temps$values[83:103])
-atlantic.city.30 <-  get.prior.estimates(atlantic.city$max[73:103], atlantic.city.temps$values[73:103])
-atlantic.city.40 <-  get.prior.estimates(atlantic.city$max[63:103], atlantic.city.temps$values[63:103])
-atlantic.city.50 <-  get.prior.estimates(atlantic.city$max[53:103], atlantic.city.temps$values[53:103])
-atlantic.city.60 <-  get.prior.estimates(atlantic.city$max[43:103], atlantic.city.temps$values[43:103])
-atlantic.city.70 <-  get.prior.estimates(atlantic.city$max[33:103], atlantic.city.temps$values[33:103])
-atlantic.city.80 <-  get.prior.estimates(atlantic.city$max[23:103], atlantic.city.temps$values[23:103])
-atlantic.city.90 <-  get.prior.estimates(atlantic.city$max[13:103], atlantic.city.temps$values[13:103])
+atlantic.city.10 <-  get.prior.estimates(atlantic.city$max[81:91], atlantic.city.temps$values[81:91])
+atlantic.city.20 <-  get.prior.estimates(atlantic.city$max[71:91], atlantic.city.temps$values[71:91])
+atlantic.city.30 <-  get.prior.estimates(atlantic.city$max[61:91], atlantic.city.temps$values[61:91])
+atlantic.city.40 <-  get.prior.estimates(atlantic.city$max[51:91], atlantic.city.temps$values[51:91])
+atlantic.city.50 <-  get.prior.estimates(atlantic.city$max[41:91], atlantic.city.temps$values[41:91])
+atlantic.city.60 <-  get.prior.estimates(atlantic.city$max[31:91], atlantic.city.temps$values[31:91])
+atlantic.city.70 <-  get.prior.estimates(atlantic.city$max[21:91], atlantic.city.temps$values[21:91])
 atlantic.city.all <-  get.prior.estimates(atlantic.city$max, atlantic.city.temps$values)
 
-portland.10 <- get.prior.estimates(portland$max[95:105], portland.temps$values[95:105])
-portland.20 <- get.prior.estimates(portland$max[85:105], portland.temps$values[85:105])
-portland.30 <- get.prior.estimates(portland$max[75:105], portland.temps$values[75:105])
-portland.40 <- get.prior.estimates(portland$max[65:105], portland.temps$values[65:105])
-portland.50 <- get.prior.estimates(portland$max[55:105], portland.temps$values[55:105])
-portland.60 <- get.prior.estimates(portland$max[45:105], portland.temps$values[45:105])
-portland.70 <- get.prior.estimates(portland$max[35:105], portland.temps$values[35:105])
-portland.80 <- get.prior.estimates(portland$max[25:105], portland.temps$values[25:105])
-portland.90 <- get.prior.estimates(portland$max[15:105], portland.temps$values[15:105])
+portland.10 <- get.prior.estimates(portland$max[80:90], portland.temps$values[80:90])
+portland.20 <- get.prior.estimates(portland$max[70:90], portland.temps$values[70:90])
+portland.30 <- get.prior.estimates(portland$max[60:90], portland.temps$values[60:90])
+portland.40 <- get.prior.estimates(portland$max[50:90], portland.temps$values[50:90])
+portland.50 <- get.prior.estimates(portland$max[40:90], portland.temps$values[40:90])
+portland.60 <- get.prior.estimates(portland$max[30:90], portland.temps$values[30:90])
+portland.70 <- get.prior.estimates(portland$max[20:90], portland.temps$values[20:90])
 portland.all <- get.prior.estimates(portland$max, portland.temps$values)
-save.image('10.year.gaps.RData')
+save.image('10.year.gaps2.RData')
 #all stationary case comparison------------------------------------------------- 
 par(mfrow = c(1,3))
 #new london
@@ -1787,27 +1780,4 @@ points(105,percent.param.stat(3, portland.all, portland.all), pch = 3, cex = 1.5
 
 
 
-boston.10 <- get.prior.estimates(boston$max[84:94], boston.temps$values[84:94])
-boston.20 <- get.prior.estimates(boston$max[74:94], boston.temps$values[74:94])
-boston.30 <- get.prior.estimates(boston$max[64:94], boston.temps$values[64:94])
-boston.40 <- get.prior.estimates(boston$max[54:94], boston.temps$values[54:94])
-boston.50 <- get.prior.estimates(boston$max[44:94], boston.temps$values[44:94])
-boston.60 <- get.prior.estimates(boston$max[34:94], boston.temps$values[34:94])
-boston.70 <- get.prior.estimates(boston$max[24:94], boston.temps$values[24:94])
-boston.80 <- get.prior.estimates(boston$max[14:94], boston.temps$values[14:94])
-boston.all <- get.prior.estimates(boston$max, boston.temps$values)
-
-
-portland.10 <- get.prior.estimates(portland$max[95:105], portland.temps$values[95:105])
-portland.20 <- get.prior.estimates(portland$max[85:105], portland.temps$values[85:105])
-portland.30 <- get.prior.estimates(portland$max[75:105], portland.temps$values[75:105])
-portland.40 <- get.prior.estimates(portland$max[65:105], portland.temps$values[65:105])
-portland.50 <- get.prior.estimates(portland$max[55:105], portland.temps$values[55:105])
-portland.60 <- get.prior.estimates(portland$max[45:105], portland.temps$values[45:105])
-portland.70 <- get.prior.estimates(portland$max[35:105], portland.temps$values[35:105])
-portland.80 <- get.prior.estimates(portland$max[25:105], portland.temps$values[25:105])
-portland.90 <- get.prior.estimates(portland$max[15:105], portland.temps$values[15:105])
-portland.all <- get.prior.estimates(portland$max, portland.temps$values)
-
-save.image('run.confidence.RData')
 

@@ -43,6 +43,7 @@
   files.tg <- list.files(path=dat.dir,pattern=filetype)
   
   data <- read.csv(paste(dat.dir,files.tg[1],sep=''), header=TRUE, sep=septype)
+  colnames(data) <- c('Year','Month', 'Day', 'Hour', 'Sea_Level')
   if(length(files.tg) > 1) {
       for (ff in 2:length(files.tg)) {
           data <- rbind(data, read.table(paste(dat.dir,files.tg[ff],sep=''), header = TRUE, sep=septype))
@@ -62,6 +63,96 @@
     lsl.max       <- rep(0,length(n.years)) #max(data$lsl.norm[ind.thisyear])
     data$lsl.norm <- rep(NA,length(years))
     
+    
+    #GONNA DO SOME WILD STUFF HERE ----------------------
+    
+    #get all of the hours out of data 
+       hours <- data$Hour
+      #get the unique hours  expect there to be 24 (and there are!))
+        hours.unique <- unique(hours)
+      n.hours <- length(hours)
+      
+        #finding the difference in hours
+       hour.diff <- diff(hours)
+     #cheking to see if any places dont have numbers
+        for (i in 1:n.hours){
+            if (is.nan(hour.diff[i])){
+                print("help")
+              }
+           }
+     #conclusion - no nans 
+        
+        #for loop through all hours 
+       
+        #the hours that are weird
+        
+        #subtracting one to make it the same length as the differnece in hours 
+        num <- 1
+      hours.strange <- rep(0, length(n.hours))
+        for (i in 1:(n.hours-1)){
+            #print(hour.diff[i])
+              #checking if difference between hours is not 1 or -23, will print 'index of data pt that has problem', else does nothing 
+              if (hour.diff[i] != 1 & hour.diff[i] != -23){
+                 print(i+1)
+                  #the list of all of the weird hour gaps in the data 
+                    hours.strange[num] <- i+1
+                 num <- num + 1
+                 }
+          }
+      
+        #now to check how big the gap is 
+      days <- data$Day
+      day.unique <- unique(days)
+      n.days <- length(days)
+      
+        #also need to check to see if there is a month gap because that could also pose the same type of problem 
+        
+        months <- data$Month
+      n.month <- length(months)
+      
+        day.counter <- 0
+        month.counter <- 0 
+        #look at each index and the one after and check to see if days are within a day of each other 
+        # if so - check hour difference 
+        #else - check if in different months - cases -31, -30, -28, -29 (for feb)
+        #go through the list of weird numbers we have 
+        for (j in 1:length(hours.strange)){
+            #need to check within the same day of each other - so that would be seeing if the difference between the days is 0 
+            #index we will be using comes from the list that we just made (the list hours.strange)
+             ind <- hours.strange[[j]]
+              #print(j)
+               # print(ind)
+               #if the difference between the two data pts is in the same day #lets ignore it 
+               # print(days[ind])
+              if ((days[ind]-days[ind-1] ) == 0 & (months[ind] - months[ind-1]) == 0){
+                   print("in the same day")
+                }
+              else if(years[ind]- years[ind-1] > 1){
+                 print("big gap here**************************************************")
+                print(ind)
+                }
+            #if month gap greater than 1, make note of it 
+             else if ((months[ind] - months[ind-1]) >= 1 | (months[ind] - months[ind-1]) <= -1) {
+               if (abs(years[ind]- years[ind-1] > 1)){
+                   print("month gap greater than or equal to 1")
+                    print(abs(months[ind] - months[ind-1]))
+                  print(ind)
+                    month.counter <- month.counter + abs(months[ind] - months[ind-1])
+                   print(month.counter)
+                    }}
+              #when the days are not the same , need to check how far apart 
+                else {
+                   print("no month gap, only day gap")
+                    print(days[ind]-days[ind-1])
+                    day.counter <- day.counter + abs(days[ind]-days[ind-1])
+                    print(day.counter)
+                  }
+            }
+      
+    
+    
+    
+    #__------------------------------------------
     
   ##----------Finding Annual Block Maxima----------------------
     #started at 2 so that the data the data stuff would start at 1939 not 1938 
