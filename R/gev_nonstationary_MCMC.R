@@ -10,17 +10,9 @@ source('read_tide_data.R')
 tide.data <- read.tide.data()
 
 
-#setwd('~/codes/Klufas_NewLondon/R/')
-#source('gev_fitting_MCMC.R')
-
-#doing GEV MCMC fitting for non stationary models
-
-#leggo
-
 log.like.calc.nonstat <- function(p, parnames, data){ #non stationary
   n.parnames <- length(parnames)
   #checks length of parameters, which will be used to determine which parameters are non stationary
-
   #if all parameters are stationary
   if (n.parnames == 3){
     mu <- p[1]
@@ -54,7 +46,6 @@ log.like.calc.nonstat <- function(p, parnames, data){ #non stationary
       xi0 <- p[3]
       xi1 <- p[4]
 
-      #sigma <- exp(sigma)
       xi <- xi0 + xi1*temps$values
     }
   }
@@ -90,7 +81,6 @@ log.like.calc.nonstat <- function(p, parnames, data){ #non stationary
       xi1 <- p[5]
 
       mu <- mu0 + mu1*temps$values
-      #sigma <- exp(sigma)
       xi <- xi0 + xi1*temps$values
     }
   }
@@ -205,11 +195,6 @@ log.like.pri.nonstat<- function(p, parnames, min, max, temps){
       
       lpri <- p.mu0 + p.mu1 + p.sigma0 + sigma1 + p.xi
       
-
-      # print('here')
-      # mu <- mu0 + mu1*temps
-      # sigma <- exp(sigma0 + sigma1*temps)
-
     }
     else if(parnames[2] == 'sigma0' & parnames[4] == 'xi0'){
       mu <- p[1]
@@ -226,7 +211,6 @@ log.like.pri.nonstat<- function(p, parnames, min, max, temps){
       p.xi1 <- dunif( x = xi1, min = -10, max = 10, log = TRUE)
       
       lpri <- p.mu + p.sigma0 +p.sigma1 + p.xi0 +p.xi1
-      #print('here')
 
 
     }
@@ -236,7 +220,6 @@ log.like.pri.nonstat<- function(p, parnames, min, max, temps){
       sigma <- p[3]
       xi0 <- p[4]
       xi1 <- p[5]
-      #print('here')
       
       p.mu0 <-  dunif( x= mu0 , min = 0, max = 3000, log = TRUE)
       p.mu1 <-  dunif( x= mu1, min = -100, max = 100, log = TRUE)
@@ -245,13 +228,12 @@ log.like.pri.nonstat<- function(p, parnames, min, max, temps){
       p.xi1 <- dunif(x = xi1, min = -10, max = 10, log = TRUE)
       
       lpri <- p.mu0 +p.mu1 + p.sigma + p.xi0 +p.xi1
-     # mu <- mu0 + mu1*temps
-     # xi <- xi0 + xi1*temps
+
     }
   }
   #all parameters non stationary
   else if (n.parnames ==6){
-    #print('hererrr')
+
     mu0 <- p[1]
     mu1 <- p[2]
     sigma0 <- p[3]
@@ -270,30 +252,6 @@ log.like.pri.nonstat<- function(p, parnames, min, max, temps){
     lpri <- p.mu0 + p.mu1 + p.sigma0 + p.sigma1 + p.xi0 + p.xi1
 
   }
-  
-
-
-# TW -- ah-ha! So this is a spot where toruble might be brewing. The prior distributions should
-# be defined for the actual parameters, mu0, mu1, sigma0, sigma1, etc... and not only for
-# mu/sigma/xi. So you'll have this calculation specifically for each of the cases above in
-# the "if" statement checking for the different models. And this will help with sigma, because
-# the stationary model has a reasonable prior for sigma on [0, 3000] (as you have below) but
-# the nonstationary parameters sigma0 and sigma1 will be much smaller. sigma0 I think can be
-# distributed uniformly on [0 something] (play around with the upper bound, and see from the
-# maximum likelihood estimates what a reasonable value for that is), and sigma1 can be positive or negative, so
-# use maybe a uniform prior centered at 0, something like [-something, +something] (again using
-# the MLE values you found for sigma1 as a guide for what a reasonable upper/lower bound is).
-
-  #p.mu <- sum(dunif(x=mu, min= 0, max=3000, log = TRUE))
-
-  #print('here')
- # p.sigma <- sum(dunif(x=sigma, min= 0, max=3000, log = TRUE))
-
-  #p.xi <- sum(dunif(x=xi, min= -10, max=10, log = TRUE))
-
-
-  #add together b/c logs
-  #p.mu.sigma.xi <- p.mu  + p.sigma + p.xi
   return(lpri)
 }
 
