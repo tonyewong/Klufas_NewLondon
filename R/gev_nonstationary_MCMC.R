@@ -1,15 +1,23 @@
+# Alex Klufas 
+# gev_nonstationary_MCMC.R
+# Modified on August 3, 2017 
+#
+# Script in order to perform MCMC calculations 
+# Functions to compare prior and posterior parameter guesses 
+# Using wide uniform distributions around the MLE histograms from pulling_data_east_coast.R
+# Allow calculation of any non-stationary GEV combination of parameters 
+# Also section to understand code behind MCMC calculations 
 
-
+# Get temperature function
 setwd('~/codes/Klufas_NewLondon/R/')
-
 source('read_temp_data.R')
-temps <- read.temp.data(1939,2014)
 
+# Get tide reading function 
 setwd('~/codes/Klufas_NewLondon/R/')
 source('read_tide_data.R')
-tide.data <- read.tide.data()
 
 
+# Log likelihood calculator 
 log.like.calc.nonstat <- function(p, parnames, data){ #non stationary
   n.parnames <- length(parnames)
   #checks length of parameters, which will be used to determine which parameters are non stationary
@@ -18,7 +26,6 @@ log.like.calc.nonstat <- function(p, parnames, data){ #non stationary
     mu <- p[1]
     sigma <- p[2]
     xi <- p[3]
-    #vals <- temps$values*2  #because I was getting error that "temps" wasn't being used for some reason
   }
 
   #one stationary parameter
@@ -30,7 +37,6 @@ log.like.calc.nonstat <- function(p, parnames, data){ #non stationary
       xi <- p[4]
 
       mu <- mu0 + mu1*temps$values
-     # print(mu)
     }
     else if (parnames[2] == 'sigma0'){
       mu <- p[1]
@@ -103,6 +109,7 @@ log.like.calc.nonstat <- function(p, parnames, data){ #non stationary
   return(nll)
 }
 
+# Log likelihood calculator for the prior estimate 
 log.like.pri.nonstat<- function(p, parnames, min, max, temps){
   #should be for loop for all of the parameters in the function, will just start w two - alpha and beta
   n.parnames <- length(parnames)
@@ -278,6 +285,12 @@ log.post.final2 <- function(p, parnames, data, min, max, temps){
 
   return(log.like.final)
 }
+
+#-------------------------------------------------------------------------------------------------------
+# Below here is an alternate way of performing MCMC Calculations 
+# Also a helpful way to understand how MCMC.parallel() works -------------------------------------------
+
+
 
 matrix.maker <- function(size, step.sizes){#size = dimension x dimension of the matrix, step size = vector of the values down the diagonal
   matrix <- matrix(rep(0, size^2), ncol=size)

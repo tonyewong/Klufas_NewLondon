@@ -1,3 +1,14 @@
+# Alex Klufas 
+# plotting_script.R
+# Modified on August 3, 2017 
+#
+# Script to create plots including 
+#   - prior to posterior plots 
+#   - simple non-stationary examples with New London tide data MLEs 
+#   - return period plotting for New London 50 years into the future 
+#   - GEV parameter stablizations 
+
+
 #plotting script 
 
 library(mvtnorm)
@@ -15,12 +26,7 @@ setwd('~/codes/Klufas_NewLondon/R/')
 source('read_tide_data.R')
 tide.data <- read.tide.data()
 
-#setwd('~/codes/Klufas_NewLondon/R/')
-#source('gev_nonstationary_MCMC.R')
-
 setwd('~/codes/Klufas_NewLondon/R/')
-load('mcmc.test.stationary.parallel.RData')
-load('DEOptim.allnonstat.RData')
 
 #getting temperature for future , starts in 1850------------------------------------------ 
 setwd('~/codes/Klufas_NewLondon/R/')
@@ -86,9 +92,6 @@ lines(all.non.stat.2015, col='black', lwd = 2)
 title('Distribution of Maxmimum Sea Level Heights with All Parameters Non-Stationary')
 legend(800,.15, legend= c('2015', '2065', '2095'), lty=c(1,1,1), lwd=c(2.5, 2.5,2.5), col=c('black', 'red','blue'))
 #-----------------------------------------------
-
-#load('mcmc.parallel.longer.iter.RData')
-#load('mcmc.final.run.RData')
 #MCMC Plot, All Params Stationary --------------
 dev.off()
 par(mfrow = c(3,1))
@@ -132,21 +135,9 @@ lines(mcmc.mu.nonstat.parallel[[3]]$samples[,4], col = 'blue')
 
 #-----------------------------------------------
 
-#Beginnings of Mega Plot of All Prior and Posterior Params----------
-#load('mcmc.params.RData')
-#load('mcmc.allnonstat.for.real.RData')
-
-#load('mcmc.rerun2.RData')
-#load('post.burnin.iter1e6.better.RData')
-#load('mcmc.rerun3.RData')
-#load('post.burnin.iter1e6.RData')
 dev.off()
-vals <- seq(from = 0, to = 3000, by = 1)
-vals2 <- seq(from = -10, to = 10, by = 1)
-#for locaiton , sigma 
-mu.sig <- plot(vals, dunif(vals,min = 0, max = 3000), type = 'l') 
 
-#Beginnings of Mega Plot of All Prior and Posterior Params----------
+#Beginnings of Mega Plot of All Prior and Posterior Params Plot ------------------------------
 row1 <- c(1, 2, 3, 4, 5, 6)
 row2 <- c(7, 8,9,10,11,12)
 row3 <- c(13,14,15,16,17,18)
@@ -156,14 +147,15 @@ m <- rbind(row1,  row2, row3, row4)
 layout(m)
 
 #stationary case ------------------------------------------------- 
-plot.dir <- '../figures/'
-pdf('test.pdf', 7, 5, colormodel = 'cmyk')
+#plot.dir <- '../figures/'
+#pdf('test.pdf', 7, 5, colormodel = 'cmyk')
 
 par(mar = c(0.25,.25,2,.25), oma = c(6, 6, 1, 0))
 plot(density(mcmc.stationary.parallel.post.burnin.1[,1]), col = 'blue', xlim = c(950,1200),xaxt = 'n', 
      yaxt = 'n', main ='', lwd = 2)
 mtext(text = 'ST', side = 2, cex= 1.5, las = 1, line = 2)
 lines(dunif(seq(from = 0, to = 3000, by = 1), min = 0, max = 3000), type = 'l', col='blue', lty=2, lwd = 2)
+mtext(text = 'a.', font = 2, side = 3, line = -1.25, at = 970)
 par(mar = c(0.25,0.25,2,0.25))
 #par(xpd = TRUE)
 
@@ -176,16 +168,19 @@ plot(density(mcmc.stationary.parallel.post.burnin.1[,2]), col = 'blue', yaxt = '
      main = '', lwd = 2, xlim = c(0,300), xaxt = 'n')
 lines(dunif(seq(from = 0, to = 400, by = 1),min = 0, max = 400), type = 'l', col='blue', lty=2, lwd = 2)
 axis(side = 3, cex.axis = 2)
+mtext(text = 'b.', font = 2, side = 3, line = -1.25, at =30)
 plot.new()
 
 #mtext(text = expression(sigma[1]))
 plot(density(mcmc.stationary.parallel.post.burnin.1[,3]), col = 'blue', yaxt = 'n',main ='', 
      xlim = c(-.2, 1.5), xaxt='n', lwd = 2)
 lines(seq(from = -10, to = 9, by = 1), rep(.05, 20), col='blue', lty=2, lwd = 2)
+mtext(text ='c.', font = 2, side = 3, line = -1.25, at = -.1)
 
 plot(0, 0, xaxt = 'n', yaxt = 'n', bty = 'n', xlim = c(.6, 1.4), ylim = c(.6, 1.4))
 arrows(x0 = .7, y0 = .65, y1= 1.25, code = 2, length = .1,xpd = TRUE, lwd = 2)
 mtext(text = 'Probability', side = 4, las = 1, line = -9, cex = 1.5)
+
 
 #non stationary mu ------------------------------------------------- 
 par(mar = c(0.25,.25,0.25,.25))
@@ -193,15 +188,18 @@ plot(density(mcmc.mu.nonstat.parallel.post.burnin.1[,1]), col = 'blue', xlim = c
      main = '', lwd = 2)
 mtext(text = 'NS1', side = 2, cex= 1.5, las = 1, line = 2)
 lines(dunif(seq(from = 0, to = 3000, by = 1), min = 0, max = 3000), type = 'l', col='blue', lty=2, lwd = 2)
+mtext(text = 'd.', font = 2, side = 3, line = -1.25, at =970)
 par(mar = c(0.25,0.25,0.25,0.25))
 
 plot(density(mcmc.mu.nonstat.parallel.post.burnin.1[,2]), col = 'blue', xlim = c(-300,300),xaxt = 'n',
      yaxt = 'n', main = '', lwd = 2)
 lines(seq(from = -500, to = 499, by = 1), rep(.0010, 1000), type = 'l', col='blue', lty=2, lwd = 2) #why the negs not showing up?
+mtext(text = 'e.', font = 2, side = 3, line = -1.25, at =-260)
 
 plot(density(mcmc.mu.nonstat.parallel.post.burnin.1[,3]), col = 'blue', xlim = c(0,300),yaxt = 'n',
      main = '', lwd = 2, xaxt = 'n')
 lines(dunif(seq(from = 0, to = 400, by = 1), min = 0, max = 400), type = 'l', col='blue', lty=2, lwd = 2)
+mtext(text = 'f.', font = 2, side = 3, line = -1.25, at =30)
 
 plot.new()
 
@@ -210,6 +208,7 @@ plot(density(mcmc.mu.nonstat.parallel.post.burnin.1[,4]), col = 'blue',yaxt = 'n
 xi.seq <- seq(from = -10, to = 10, by = 1)
 lines(xi.seq, dunif(xi.seq, min = -10, max = 10), type = 'l', col='blue', lty=2, lwd = 2)
 par(mar = c(0.25,0.25,0.25,0.25))
+mtext(text = 'g.', font = 2, side = 3, line = -1.25, at =-.1)
 
 plot.new()
 
@@ -219,27 +218,33 @@ plot(density(mcmc.mu.sigma.nonstat.parallel.post.burnin.1[,1]), col = 'blue', xl
      yaxt = 'n',xaxt = 'n', main = '', lwd = 2)
 mtext(text = 'NS2', side = 2, cex= 1.5, las = 1, line = 2)
 lines(dunif(seq(from = 0, to = 3000, by = 1), min = 0, max = 3000), type = 'l', col='blue', lty=2, lwd = 2)
+mtext(text = 'h.', font = 2, side = 3, line = -1.25, at =970)
+
 par(mar = c(0.25,0.25,0.25,0.25))
 
 plot(density(mcmc.mu.sigma.nonstat.parallel.post.burnin.1[,2]), col = 'blue',
      xlim = c(-300,300), yaxt = 'n',xaxt = 'n', main = '', lwd = 2)
 mu1.seq <- seq(from =-500, to = 500, by = 1)
 lines(mu1.seq,dunif(mu1.seq, min = -500, max = 500), type = 'l', col='blue', lty=2, lwd = 2)
+mtext(text = 'i.', font = 2, side = 3, line = -1.25, at =-260)
 
 plot(density(mcmc.mu.sigma.nonstat.parallel.post.burnin.1[,3]), col = 'blue', yaxt = 'n', xaxt = 'n',
      main = '', lwd = 2)
 sig0.seq <- seq(from = 0, to = 100, by = 1)
 lines(sig0.seq, dunif(sig0.seq, min = 0, max = 100), type = 'l', col='blue', lty=2, lwd = 2)
 sig1.seq <- seq(from = -100, to = 100, by = 1)
+mtext(text = 'j.', font = 2, side = 3, line = -1.25, at =4.6)
 
 plot(density(mcmc.mu.sigma.nonstat.parallel.post.burnin.1[,4]), col = 'blue',yaxt = 'n', xaxt = 'n',
      main = '', lwd = 2)
 lines(sig1.seq, dunif(sig1.seq, min = -100, max = 100), type = 'l', col='blue', lty=2, lwd = 2)
+mtext(text = 'k.', font = 2, side = 3, line = -1.25, at =-1.5)
 
 plot(density(mcmc.mu.sigma.nonstat.parallel.post.burnin.1[,5]), col = 'blue', yaxt = 'n',main = '', 
      xlim = c(-.2, 1.5), xaxt='n', lwd = 2)
 xi0.seq <- seq(from = -10, to = 10, by = 1)
 lines(xi0.seq, dunif(xi0.seq, min = -10, max = 10), type = 'l', col='blue', lty=2, lwd = 2)
+mtext(text = 'l.', font = 2, side = 3, line = -1.25, at =-.1)
 
 plot.new()
 par(mar = c(0.25,0.25,0.25,1))
@@ -251,6 +256,7 @@ plot(density(mcmc.mu.sigma.xi.nonstat.parallel.post.burnin.1[,1]), col = 'blue',
 mtext(text = 'NS3', side = 2, cex= 1.5, las = 1, line = 2)
 mtext(text = expression(mu[0]), side = 1, line = 3.5, cex = 2)
 lines(dunif(seq(from = 0, to = 3000, by = 1), min = 0, max = 3000), type = 'l', col='blue', lty=2, lwd = 2)
+mtext(text = 'm.', font = 2, side = 3, line = -1.25, at =970)
 par(mar = c(2,0.25,0.25,0.25))
 
 plot(density(mcmc.mu.sigma.xi.nonstat.parallel.post.burnin.1[,2]), col = 'blue', xlim = c(-300,300),
@@ -258,17 +264,20 @@ plot(density(mcmc.mu.sigma.xi.nonstat.parallel.post.burnin.1[,2]), col = 'blue',
 mu0.seq <- seq(from = -500, to = 500, by = 1)
 lines(mu0.seq, dunif(mu0.seq, min = -500, max = 500), type = 'l', col='blue', lty=2, lwd = 2)
 mtext(text = expression(mu[1]), side = 1, line = 3.5, cex = 2)
+mtext(text = 'n.', font = 2, side = 3, line = -1.25, at =-260)
 
 plot(density(mcmc.mu.sigma.xi.nonstat.parallel.post.burnin.1[,3]), col = 'blue',yaxt = 'n',main = '', 
      lwd = 2, cex.axis = 2)
 lines(dunif(seq(from = -500, to = 500, by = 1), min = -500, max = 500), type = 'l', col='blue', lty=2, lwd = 2)
 mtext(text = expression(sigma[0]), side = 1, line = 3.5, cex = 2)
+mtext(text = 'o.', font = 2, side = 3, line = -1.25, at =4.6)
 
 plot(density(mcmc.mu.sigma.xi.nonstat.parallel.post.burnin.1[,4]), col = 'blue', yaxt = 'n',main = '', 
      lwd = 2, cex.axis = 2)
 sig1.seq <- seq(from = -500, to = 500, by = 1)
 lines(sig1.seq, dunif(sig1.seq, min = -500, max = 500), type = 'l', col='blue', lty=2, lwd = 2)
 mtext(text = expression(sigma[1]), side = 1, line = 3.5, cex = 2)
+mtext(text = 'p.', font = 2, side = 3, line = -1.25, at =-1.5)
 
 plot(density(mcmc.mu.sigma.xi.nonstat.parallel.post.burnin.1[,5]), col = 'blue', 
      yaxt = 'n',main = '', xlim = c(-.2, 1.5), lwd = 2, cex.axis = 2)
@@ -276,18 +285,23 @@ xi0.seq <- seq(from = -10, to = 10, by = 1)
 lines(xi0.seq, dunif(xi0.seq, min = -10, max = 10), type = 'l', col='blue', lty=2, lwd = 2)
 par(mar = c(2,0.25,0.25,1))
 mtext(text = expression(xi[0]), side = 1, line = 3.5, cex = 2)
+mtext(text = 'q.', font = 2, side = 3, line = -1.25, at =-.1)
 
 xi1.seq <- seq(from = -10, to = 10, by = 1)
 plot(density(mcmc.mu.sigma.xi.nonstat.parallel.post.burnin.1[,6]), col = 'blue', yaxt = 'n',main = '', 
      lwd = 2, cex.axis = 2)
 lines(xi1.seq, dunif(xi1.seq, min = -10, max = 10), type = 'l', col='blue', lty=2, lwd = 2)
 mtext(text = expression(xi[1]), side =1, line = 3.5, cex = 2)
-
+mtext(text = 'r.', font = 2, side = 3, line = -1.25, at =-2.9)
 #mtext(text = 'Model Structure', side = 2, outer = TRUE, las = 1, line =1)
 mtext(text = 'Parameter Values', side = 1, outer = TRUE, line =4 , cex = 1.5)
 #-------------------------------------------------------------------
 
 library(RColorBrewer)
+
+
+#MEGA PLOT GEV STABILIZATION----------------------------------------------------
+
 #functions used in plotting------------------------------------------------
 percent.param <- function(ind, city.year, city.all){
   return(abs((city.year$mu.sigma.xi[ind] - city.all$mu.sigma.xi[ind]) / city.all$mu.sigma.xi[ind]))
@@ -301,10 +315,8 @@ percent.param.mu <- function(ind, city.year, city.all){
 percent.param.mu.sigma <- function(ind, city.year, city.all){
   return(abs((city.year$mu.sigma[ind] - city.all$mu.sigma[ind]) / city.all$mu.sigma[ind]))
 }
-#MEGA PLOT GEV STABILIZATION----------------------------------------------------
-#install.packages('RColorBrewer')
-#load('10.year.gaps.RData')
-#load('10.year.gaps2.RData')
+
+
 row1 <- c(1, 2, 3, 4, 5, 6)
 row2 <- c(7, 8,9,10,11,12)
 row3 <- c(13,14,15,16,17,18)
@@ -342,6 +354,7 @@ plot(nl.years, nl.mu0.stat, type = 'l', xlim = c(0,95), ylim = c(0,.07),
      cex.main = 2)
 mtext(text = expression(paste(Delta, mu[0])), side = 2, las = 1, line = 6, cex = 2)
 mtext(text = 'ST', side = 3, line = 1, cex = 1.5)
+mtext(text = 'a.', font = 2, side = 3, line = -1.5, at = 5, cex = 1.5)
 axis(labels = c('0', '20' , '40','60', '80' ), side =1, at = c(0,20,40,60,80),cex.axis= 2.5)
 axis(labels = c('0.0', '0.03', '0.06'), side = 2, at= c(0.0, .03, .06), las = 1, cex.axis= 2.5)
 
@@ -407,7 +420,7 @@ plot(nl.years, nl.sigma0.stat,col= cols[1],
 mtext(text = expression(paste(Delta, sigma[0])), line = 6, side = 2, las = 1, cex = 2)
 axis(labels = c('0', '20' , '40','60', '80' ), side =1, at = c(0,20,40,60,80),cex.axis= 2.5)
 axis(labels = c('0', '0.7', '1.3' ), side =2, at = c(0,.7,1.3),cex.axis= 2.5, las = 1)
-
+mtext(text = 'h.', font = 2, side = 3, line = -1.7, at = 5, cex = 1.5)
 #boston 
 bos.sigma0.stat <- c(percent.param.stat(2, boston.10, boston.all), 
                 percent.param.stat(2, boston.20, boston.all), 
@@ -457,7 +470,7 @@ plot(nl.years, nl.xi0.stat, xlim = c(0,95), ylim = c(-.01,80), type = 'l',
 mtext(text = expression(paste(Delta, xi[0])), las = 1, side = 2, line =6, cex = 2)
 axis(labels = c('0', '20' , '40','60', '80' ), side =1, at = c(0,20,40,60,80),cex.axis= 2.5)
 axis(labels = c('0', '40', '80' ), side =2, at = c(0,40,80),cex.axis= 2.5, las = 1)
-
+mtext(text = 'n.', font = 2, side = 3, line = -1.5, at = 5, cex = 1.5)
 #boston 
 bos.xi0.stat <- c(percent.param.stat(3, boston.10, boston.all), 
              percent.param.stat(3, boston.20, boston.all), 
@@ -508,6 +521,7 @@ nl.mu0.mu.nonstat <- c(percent.param.mu(1, new.london.10, new.london.all)  ,
 plot(nl.years, nl.mu0.mu.nonstat, type = 'l', xlim = c(0,95), ylim = c(0,.07), xaxt = 'n', yaxt = 'n', col= cols[1],
      main = '', lwd = 2, cex.main = 2)
 mtext(text = 'NS1', side = 3, line = 1, cex = 1.5)
+mtext(text = 'b.', font = 2, side = 3, line = -1.7, at = 5, cex = 1.5)
 #boston 
 bos.mu0.mu.nonstat <- c(percent.param.mu(1, boston.10, boston.all), 
              percent.param.mu(1, boston.20, boston.all), 
@@ -555,6 +569,7 @@ nl.mu1.mu.nonstat <- c(percent.param.mu(2, new.london.10, new.london.all)  ,
 plot(nl.years, nl.mu1.mu.nonstat, type = 'l',xlim = c(0,95), ylim = c(-1,25), xaxt = 'n', ylab ='', 
      cex.lab = 1.5, col= cols[1], las = 1, yaxt = 'n', lwd = 2)
 axis(labels = c('0', '10', '20' ), side =2, at = c(0,10,20),cex.axis= 2.5, las = 1)
+mtext(text = 'e.', font = 2, side = 3, line = -1.5, at = 5, cex = 1.5)
 
 #boston 
 bos.mu1.mu.nonstat <- c(percent.param.mu(2, boston.10, boston.all), 
@@ -601,6 +616,7 @@ nl.sigma0.mu.nonstat <- c(percent.param.mu(3, new.london.10, new.london.all)  ,
 plot(nl.years, nl.sigma0.mu.nonstat, xlim = c(0,95), ylim = c(-.01,1.5), type = 'l', 
      yaxt = 'n', col= cols[1], xaxt = 'n', lwd = 2)
 axis(labels = c('0', '20' , '40','60', '80' ), side =1, at = c(0,20,40,60,80),cex.axis= 2.5)
+mtext(text = 'i.', font = 2, side = 3, line = -1.7, at = 5, cex = 1.5)
 #boston 
 bos.sigma0.mu.nonstat <- c(percent.param.mu(3, boston.10, boston.all), 
                 percent.param.mu(3, boston.20, boston.all), 
@@ -647,7 +663,7 @@ nl.xi0.mu.nonstat <- c(percent.param.mu(4, new.london.10, new.london.all)  ,
 plot(nl.years, nl.xi0.mu.nonstat,xlim = c(0,95), ylim = c(-.01,80), type = 'l', 
      yaxt = 'n', col= cols[1], xaxt = 'n', lwd = 2)
 axis(labels = c('0', '20' , '40','60', '80' ), side =1, at = c(0,20,40,60,80),cex.axis= 2.5)
-
+mtext(text = 'o.', font = 2, side = 3, line = -1.7, at = 5, cex = 1.5)
 #boston 
 bos.xi0.mu.nonstat <- c(percent.param.mu(4, boston.10, boston.all), 
              percent.param.mu(4, boston.20, boston.all), 
@@ -696,7 +712,7 @@ nl.mu0.mu.sig.nonstat <- c(percent.param.mu.sigma(1, new.london.10, new.london.a
 plot(nl.years, nl.mu0.mu.sig.nonstat, type = 'l', xlim = c(0,95), ylim = c(0,.07), xaxt = 'n', yaxt = 'n', col= cols[1],
      main = '', lwd = 2, cex.main = 2)
 mtext(text = 'NS2', side = 3, line = 1, cex = 1.5)
-
+mtext(text = 'c.', font = 2, side = 3, line = -1.5, at = 5, cex = 1.5)
 #boston 
 bos.mu0.mu.sig.nonstat <- c(percent.param.mu.sigma(1, boston.10, boston.all), 
              percent.param.mu.sigma(1, boston.20, boston.all), 
@@ -744,7 +760,7 @@ nl.mu1.mu.sig.nonstat <- c(percent.param.mu.sigma(2, new.london.10, new.london.a
             percent.param.mu.sigma(2, new.london.all, new.london.all))
 plot(nl.years, nl.mu1.mu.sig.nonstat, type = 'l',xlim = c(0,95), 
      ylim = c(-1,25), xaxt = 'n', yaxt = 'n', col= cols[1], lwd = 2)
-
+mtext(text = 'f.', font = 2, side = 3, line = -1.7, at = 5, cex = 1.5)
 
 #boston 
 bos.mu1.mu.sig.nonstat <- c(percent.param.mu.sigma(2, boston.10, boston.all), 
@@ -790,7 +806,7 @@ nl.sigma0.mu.sig.nonstat <- c(percent.param.mu.sigma(3, new.london.10, new.londo
                percent.param.mu.sigma(3, new.london.all, new.london.all))
 plot(nl.years, nl.sigma0.mu.sig.nonstat, xlim = c(0,95), ylim = c(-.01,1.5), 
      type = 'l', xaxt = 'n', yaxt = 'n',col= cols[1], lwd = 2)
-
+mtext(text = 'j.', font = 2, side = 3, line = -1.7, at = 5, cex = 1.5)
 #boston 
 bos.sigma0.mu.sig.nonstat <- c(percent.param.mu.sigma(3, boston.10, boston.all), 
                 percent.param.mu.sigma(3, boston.20, boston.all), 
@@ -837,6 +853,7 @@ nl.sigma1.mu.sig.nonstat <-c(percent.param.mu.sigma(4, new.london.10, new.london
 plot(nl.years, nl.sigma1.mu.sig.nonstat,xlim = c(0,95), ylim = c(-.01,115), type = 'l' , ylab = '', 
      cex.lab=1.5, xaxt = 'n', col= cols[1], las = 1, yaxt = 'n', lwd = 2)
 axis(labels = c('0', '40', '80' ), side =2, at = c(0,40,80),cex.axis= 2.5, las = 1)
+mtext(text = 'l.', font = 2, side = 3, line = -1.7, at = 5, cex = 1.5)
 #boston 
 bos.sigma1.mu.sig.nonstat <-c(percent.param.mu.sigma(4, boston.10, boston.all), 
                percent.param.mu.sigma(4, boston.20, boston.all), 
@@ -883,6 +900,7 @@ nl.xi0.mu.sig.nonstat <- c(percent.param.mu.sigma(5, new.london.10, new.london.a
 plot(nl.years, nl.xi0.mu.sig.nonstat,xlim = c(0,95), ylim = c(-.01,80), 
      type = 'l', yaxt = 'n', col= cols[1], xaxt = 'n', lwd = 2)
 axis(labels = c('0', '20' , '40','60', '80' ), side =1, at = c(0,20,40,60,80),cex.axis= 2.5)
+mtext(text = 'p.', font = 2, side = 3, line = -1.5, at = 5, cex = 1.5)
 #boston 
 bos.xi0.mu.sig.nonstat <- c(percent.param.mu.sigma(5, boston.10, boston.all), 
              percent.param.mu.sigma(5, boston.20, boston.all), 
@@ -934,6 +952,7 @@ nl.mu0.all.nonstat <- c(percent.param(1, new.london.10, new.london.all)  ,
 plot(nl.years, nl.mu0.all.nonstat, type = 'l', xlim = c(0,95), ylim = c(0,.07), xaxt='n', yaxt ='n', cex.lab = 2, col= cols[1],
      main = '', lwd = 2, cex.main = 2)
 mtext(text = 'NS3', side = 3, line = 1, cex = 1.5)
+mtext(text = 'd.', font = 2, side = 3, line = -1.7, at = 5, cex = 1.5)
 #boston 
 bos.mu0.all.nonstat <- c(percent.param(1, boston.10, boston.all), 
              percent.param(1, boston.20, boston.all), 
@@ -981,7 +1000,7 @@ nl.mu1.all.nonstat <- c(percent.param(2, new.london.10, new.london.all)  ,
             percent.param(2, new.london.all, new.london.all))
 plot(nl.years, nl.mu1.all.nonstat, type = 'l',xlim = c(0,95),ylim = c(-1,25),  xaxt='n', 
      yaxt = 'n', cex.lab = 2, col= cols[1], lwd = 2)
-
+mtext(text = 'g.', font = 2, side = 3, line = -1.7, at = 5, cex = 1.5)
 #boston 
 bos.mu1.all.nonstat <- c(percent.param(2, boston.10, boston.all), 
              percent.param(2, boston.20, boston.all), 
@@ -1027,7 +1046,7 @@ nl.sigma0.all.nonstat <- c(percent.param(3, new.london.10, new.london.all)  ,
                percent.param(3, new.london.all, new.london.all))
 plot(nl.years, nl.sigma0.all.nonstat,xlim = c(0,95), ylim = c(-.01,1.5), type = 'l', 
      xaxt='n', yaxt = 'n', cex.lab = 2, col= cols[1], lwd = 2)
-
+mtext(text = 'k.', font = 2, side = 3, line = -1.7, at = 5, cex = 1.5)
 
 #boston 
 bos.sigma0.all.nonstat <- c(percent.param(3, boston.10, boston.all), 
@@ -1074,6 +1093,7 @@ nl.sigma1.all.nonstat <-c(percent.param(4, new.london.10, new.london.all)  ,
 plot(nl.years, nl.sigma1.all.nonstat,xlim = c(0,95),
      ylim = c(-.01,115), type = 'l' , xaxt='n', yaxt = 'n', cex.lab = 2, col= cols[1], 
      lwd = 2)
+mtext(text = 'm.', font = 2, side = 3, line = -1.5, at = 5, cex = 1.5)
 
 #boston 
 bos.sigma1.all.nonstat <-c(percent.param(4, boston.10, boston.all), 
@@ -1121,7 +1141,7 @@ nl.xi0.all.nonstat <- c(percent.param(5, new.london.10, new.london.all)  ,
             percent.param(5, new.london.all, new.london.all))
 plot(nl.years, nl.xi0.all.nonstat,xlim = c(0,95), ylim = c(-.01,80),
      type = 'l', yaxt = 'n', xaxt = 'n', cex.lab = 2, col= cols[1], lwd = 2)
-
+mtext(text = 'q.', font = 2, side = 3, line = -1.6, at = 5, cex = 1.5)
 #boston 
 bos.xi0.all.nonstat <- c(percent.param(5, boston.10, boston.all), 
              percent.param(5, boston.20, boston.all), 
@@ -1171,6 +1191,7 @@ plot(nl.years, nl.xi1.all.nonstat, xlim = c(0,95), ylim = c(-.01,35), type = 'l'
      cex.lab = 1.5, col= cols[1], las = 1, xaxt ='n', yaxt = 'n', lwd = 2)
 axis(labels = c('0', '20' , '40','60', '80' ), side =1, at = c(0,20,40,60,80),cex.axis= 2.5)
 axis(labels = c('0', '15', '30' ), side =2, at = c(0,15,30),cex.axis= 2.5, las = 1)
+mtext(text = 'r.', font = 2, side = 3, line = -1.5, at = 5, cex = 1.5)
 #boston 
 bos.xi1.all.nonstat <- c(percent.param(6, boston.10, boston.all), 
              percent.param(6, boston.20, boston.all), 
@@ -1209,6 +1230,10 @@ mtext(text = 'Years of Data', outer = TRUE, side = 1, cex = 2)
 title('Model Structure', outer = TRUE, cex.main = 2.5, line = 3)
 #-----------------------------------------------------------------------------
 
+plot(50,50, xlim = c(0,100), ylim = c(0,100))
+legend(25,80,lwd = 3, lty = c(1,1,1,1), col = cols, 
+       legend = c('New London', 'Boston', 'Atlantic City', 'Portland'), cex = 2)
+
 #Annotated Plot-----------------------------------------------------
 portland.sigma0 <- c(percent.param.stat(2, portland.10, portland.all), 
                      percent.param.stat(2, portland.20, portland.all),
@@ -1245,7 +1270,9 @@ points(90,percent.param.stat(2, portland.all, portland.all), pch = 3, cex = 1.5)
 
 
 
-#Return Period Plotting------------------------------------------------ ---------------------------------------------
+
+
+#Return Period Plotting (New London Only)------------------------------------------------ ---------------------------------------------
 sl.rise <- seq(from = 2850, to = 2721 , by = -2.57)
 year <- seq(from = 2015, to =2065, by =1)
 #Stationary For Loops------------------------------------------- 
@@ -1343,31 +1370,34 @@ plot(year, log10(1/stat.quant[,2]), type = 'l', col = 'blue', ylim = c(0,7.5), l
 polygon(c(year, rev(year)), c(log10(1/stat.quant[,3]),rev(log10(1/stat.quant[,1]))), 
         col = rgb(0,0,1,.25), border = NA)
 stat.labels <- c (expression(10^2), expression(10^4), expression(10^6))
-axis(side = 2, cex.axis = 2.5, at = c(2, 4,6), labels =stat.labels, las = 1)
-mtext(text = 'ST', side = 2, las = 1, cex =2, line = 5 )
-
+axis(side = 2, cex.axis = 2, at = c(2, 4,6), labels =stat.labels, las = 1)
+mtext(text = 'ST', side = 2, las = 1, cex =1.5, line = 5 )
+mtext(text = 'a.', font = 2, side = 3, line = -2, at =2015, cex = 1.5)
 #Mu Non Stationary--------------------- 
 plot(year, log10(1/mu.quant[,2]), type = 'l', col = 'blue', ylim = c(0,7.5), lwd = 3, 
      xaxt = 'n', yaxt = 'n')
 polygon(c(year, rev(year)), c(log10(1/mu.quant[,3]), rev(log10(1/mu.quant[,1]))), 
         border = NA, col = rgb(0,0,1,.25))
 mu.labels <-c(expression(10^2), expression(10^4), expression(10^5))
-axis(side = 2, cex.axis = 2.5, at= c(2,4,6), labels = mu.labels, las = 1, cex = 2)
-mtext(text = 'NS1', side = 2, las = 1, cex = 2, line = 5)
-
+axis(side = 2, cex.axis = 2, at= c(2,4,6), labels = mu.labels, las = 1, cex = 1.5)
+mtext(text = 'NS1', side = 2, las = 1, cex = 1.5, line = 5)
+mtext(text = 'b.', font = 2, side = 3, line = -2, at =2015, cex = 1.5)
 #Mu and Sigma Non Stat--------------------------
 plot(year, log10(1/mu.sig.quant[,2]), type = 'l', col = 'blue',lwd = 3,ylim = c(0,7.5), yaxt = 'n', 
-     cex.axis = 2.5)
+     cex.axis =2)
 polygon(c(year, rev(year)), c(log10(1/mu.sig.quant[,3]), rev(log10(1/mu.sig.quant[,1]))), 
         border = NA, col = rgb(0,0,1,.25))
 mu.sig.labels <- c(expression(10^2), expression(10^4), expression(10^6))
-axis(side = 2, cex.axis = 2.5, at = c(2,4,6), labels = mu.sig.labels, las = 1)
-mtext(text = 'NS2', side = 2, las = 1, cex = 2, line = 5)
+axis(side = 2, cex.axis = 2, at = c(2,4,6), labels = mu.sig.labels, las = 1)
+mtext(text = 'NS2', side = 2, las = 1, cex = 1.5, line = 5)
+mtext(text = 'c.', font = 2, side = 3, line = -2, at =2015, cex = 1.5)
 
-mtext(text = 'Return Period', side =2, outer = TRUE, line = 12, cex = 2)
-mtext(text = 'Year', las = 1, side =1, outer = TRUE, line = 4, cex = 2)
-mtext(text = 'Decrease in Return Period of Damaging Floods', outer = TRUE, side = 3, cex = 2.5, 
+mtext(text = 'Return Period', side =2, outer = TRUE, line = 12, cex = 1.5)
+mtext(text = 'Year', las = 1, side =1, outer = TRUE, line = 4, cex = 1.5)
+mtext(text = 'Decrease in Return Period of Damaging Floods', outer = TRUE, side = 3, cex = 1.5, 
       font = 2, line = 1)
+
+
 
 
 
@@ -2111,6 +2141,7 @@ nl.years <- c(10,20,30,40,50,66)
 plot(nl.years, new.london.1.20, type = 'l', col = cols[1], ylim = c(-.25,.25),
      ylab = '', lwd = 2, xlab = '', main = 'ST', xlim = c(10,95), cex.main = 2.5, cex.axis = 2.5,
      las = 1, font = 1)
+mtext(text = 'a.', font = 2, line = -2.5, at = 12, cex = 2)
 abline(col = cols[5], h = 0, lwd = 2, lty = 2)
 abline(col = 'gray', lwd = 2, lty = 2, v = 20)
 abline(col = 'gray', lwd = 2, lty = 2, v = 40)
@@ -2160,6 +2191,7 @@ new.london.1.20.mu <- c(qevd.calc.mu.nonstat.20(new.london.10, new.london.all),
 plot(nl.years, new.london.1.20.mu, type = 'l', col = cols[1],  ylim = c(-.25,.25), 
      ylab = '', lwd = 2, xlab = '', main = 'NS1', xlim = c(10,95), yaxt = 'n', cex.main = 2.5
      , cex.axis = 2.5, font = 1)
+mtext(text = 'b.', font = 2, line = -2.5, at = 12, cex = 2)
 abline(col = cols[5], h = 0, lwd = 2, lty = 2)
 abline(col = 'gray', lwd = 2, lty = 2, v = 20)
 abline(col = 'gray', lwd = 2, lty = 2, v = 40)
@@ -2210,6 +2242,7 @@ new.london.1.20.mu.sig <- c(qevd.calc.mu.sig.nonstat.20(new.london.10, new.londo
 plot(nl.years, new.london.1.20.mu.sig, type = 'l', col = cols[1],  ylim = c(-.25,.25),
      ylab = '', lwd = 2, xlab = '', main = 'NS2', xlim = c(10,95), yaxt = 'n',
      cex.main = 2.5, cex.axis = 2.5, font = 1)
+mtext(text = 'c.', font = 2, line = -2.5, at = 12, cex = 2)
 abline(col = cols[5], h = 0, lwd = 2, lty = 2)
 abline(col = 'gray', lwd = 2, lty = 2, v = 20)
 abline(col = 'gray', lwd = 2, lty = 2, v = 40)
@@ -2259,6 +2292,7 @@ new.london.1.20.all <- c(qevd.calc.all.nonstat.20(new.london.10, new.london.all)
 plot(nl.years, new.london.1.20.all, type = 'l', col = cols[1],  ylim = c(-.25,.25), 
      ylab = '', lwd = 2, xlab = '', main = 'NS3', xlim = c(10,95), yaxt = 'n', 
      cex.main = 2.5, cex.axis = 2.5, font = 1)
+mtext(text = 'd.', font = 2, line = -2.5, at = 12, cex = 2)
 abline(col = cols[5], h = 0, lwd = 2, lty = 2)
 abline(col = 'gray', lwd = 2, lty = 2, v = 20)
 abline(col = 'gray', lwd = 2, lty = 2, v = 40)

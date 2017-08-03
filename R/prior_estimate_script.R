@@ -1,21 +1,23 @@
 # Alex Klufas 
+# prior_estimate_script.R 
+# Modified on August 2, 2017 
 #
+# Script to get MLE parameter estimates of different tide stations using DEOptim 
+# Before using this script, must have tide data preprocessed and correct years 
 
-#working with different year blocks for estimating params 
-
+#import function to get temperature data 
 setwd('~/codes/Klufas_NewLondon/R/')
-
 source('read_temp_data.R')
-temps <- read.temp.data(1939, 2014)
 
+#import function to get tide data
 setwd('~/codes/Klufas_NewLondon/R/')
 source('read_tide_data.R')
-tide.data <- read.tide.data()
 
+#get maximum likelihood function using DE Optim 
 setwd('~/codes/Klufas_NewLondon/R/')
 source('optimization_sf.R')
 
-
+#model possibilities 
 all.p.names <- list(c('mu', 'sigma', 'xi'), 
                     c('mu0', 'mu1', 'sigma', 'xi'),
                     c('mu', 'sigma0', 'sigma1', 'xi'),
@@ -25,7 +27,12 @@ all.p.names <- list(c('mu', 'sigma', 'xi'),
                     c('mu0', 'mu1', 'sigma', 'xi0', 'xi1'),
                     c('mu0', 'mu1', 'sigma0', 'sigma1' , 'xi0', 'xi1'))
 
+#how each of the models will be stored in the vector that is the output of get.prior.estimates()
+#parameters in the title are those that are non-stationary 
+
 other.p.names <- c('stat', 'mu','sigma', 'xi', 'mu.sigma', 'sigma.xi', 'mu.xi', 'mu.sigma.xi')
+
+#upper and lower bounds of parameters 
 lower.bound <- list(c(0,0,-5),
                     c(0,-100, 0, -5),
                     c(0, 0, 0, -200),
@@ -46,11 +53,10 @@ upper.bound <- list(c(3000,3000,5),
 )
 
 
-
+#function to get MLE estimates of parameters 
 get.prior.estimates <- function(city, city.temps){
-  
   sublist <- vector('list', 8)
-  
+  #column names to access the estimates 
   names(sublist) <- other.p.names
   for (j in 1: length(all.p.names)){
     print(j)
@@ -60,14 +66,14 @@ get.prior.estimates <- function(city, city.temps){
                           data = city, 
                           temps = city.temps, 
                           parnames = all.p.names[[j]])
+    #only keep track of the best parameters 
     sublist[[other.p.names[j]]] <- optim.like$optim$bestmem
-    
   }
-
   return(sublist)
 }
 
 #-----------------------------------------------------------------------------------
+#Example how to use this code for 4 tide stations with long tide records 
 new.london.10 <- get.prior.estimates(new.london$max[56:66], new.london.temps$values[56:66])
 new.london.20 <- get.prior.estimates(new.london$max[46:66], new.london.temps$values[46:66])
 new.london.30 <- get.prior.estimates(new.london$max[36:66], new.london.temps$values[36:66])
@@ -101,5 +107,4 @@ portland.50 <- get.prior.estimates(portland$max[40:90], portland.temps$values[40
 portland.60 <- get.prior.estimates(portland$max[30:90], portland.temps$values[30:90])
 portland.70 <- get.prior.estimates(portland$max[20:90], portland.temps$values[20:90])
 portland.all <- get.prior.estimates(portland$max, portland.temps$values)
-#save.image('10.year.gaps2.RData')
 
