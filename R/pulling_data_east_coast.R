@@ -4,6 +4,8 @@
 #
 # Script to pull all of the other tide data from many files at once 
 
+library(MASS)
+
 # Following chunk of code for the files used specifically for this project=========================================
 dat.dir <- './data/'
 filetype <- 'csv'
@@ -49,7 +51,7 @@ colnames(Portland) <- c('Year', 'Month', 'Day', 'Hour', 'Sea_Level')
 #==================================================================================
 
 
-# very long function to pull data from csv files 
+# function to pull data from csv files 
 # takes out years that are missing more than 10% of data 
 # get yearly annual block maxima 
 
@@ -268,10 +270,7 @@ upper.bound <- list(c(4000,3000,5),
                  )
 
 get.prior.estimates <- function(city, city.temps){
-  #for (i in 1:2){
-  
     sublist <- vector('list', 8)
-    #sublist2 <- vector('list', 8)
     names(sublist) <- other.p.names
      for (j in 1: length(all.p.names)){
       print(j)
@@ -282,13 +281,7 @@ get.prior.estimates <- function(city, city.temps){
                                   temps = city.temps$values, 
                                   parnames = all.p.names[[j]])
         sublist[[other.p.names[j]]] <- optim.like$optim$bestmem
-        #sublist2[[tmp[j]]] <- optim.like$member$bestmemit
     }
-    #optim.gev.fit$city.names[i] <- sublist
-    #ouble.list <- vector('list', 2)
-    #names(double.list) <- c('sublist', 'sublist2')
-   # double.list$sublist <- sublist
-    #double.list$sublist2 <- sublist2
   return(sublist)
   }
 
@@ -306,11 +299,6 @@ portland.temps <- read.temp.data(portland$years)
 duck.pier.temps <- read.temp.data(duck.pier$years)
 newport.temps <- read.temp.data(newport$years)
 new.london.temps <- read.temp.data(new.london$years)
-save.image('new.temps.RData')
-
-boston.priors.2 <- get.prior.estimates(boston, boston.temps)
-portland.priors.2 <- get.prior.estimates(portland,portland.temps)
-save.image('priors.run2.RData')
 
 boston.priors <- get.prior.estimates(boston, boston.temps)
 atlantic.city.priors <- get.prior.estimates(atlantic.city, atlantic.city.temps)
@@ -324,16 +312,7 @@ duck.pier.priors<- get.prior.estimates(duck.pier,duck.pier.temps)
 newport.priors <- get.prior.estimates(newport,newport.temps)
 new.london.priors <- get.prior.estimates(new.london, new.london.temps)
 
-mega.priors.list <- list(boston.priors, 
-                         atlantic.city.priors, 
-                         charleston.priors,
-                         montauk.priors, 
-                         chesapeake.bay.priors, 
-                         lewes.priors, 
-                         new.york.city.priors, 
-                         portland.priors, 
-                         duck.pier.priors, 
-                         newport.priors)
+#creating lists that will be used for plotting of histograms and fits below 
 
 mu.all.stat <- c(boston.priors$stat[1], 
                  atlantic.city.priors$stat[1], 
@@ -367,31 +346,6 @@ xi.all.stat <-c(boston.priors$stat[3],
                 portland.priors$stat[3], 
                 duck.pier.priors$stat[3], 
                 newport.priors$stat[3]) 
-#install.packages('MASS')
-library(MASS)
-#fitdistr(mu.all.stat, 'gamma')
-par(mfrow = c(1,3), oma = c(4,2,4,0))
-
-hist(mu.all.stat, freq = FALSE, main = '', xlab = expression(mu), ylab = '', cex.lab = 2)
-mu.gamma <- fitdistr(mu.all.stat, 'gamma')
-mu.seq <- seq(from = min (mu.all.stat) - 200, to = max(mu.all.stat) + 200, by = 1)
-lines(mu.seq, dgamma(mu.seq, shape = mu.gamma$estimate[1], rate = mu.gamma$estimate[2]), col = 'red')
-
-hist(sigma.all.stat, freq = FALSE, main='', xlab = expression(sigma), ylab = '', cex.lab = 2)
-sigma.gamma <- fitdistr(sigma.all.stat, 'gamma')
-seq.sigma <- seq(from = min(sigma.all.stat)-20, to = max(sigma.all.stat)+20, by =1)
-lines( seq.sigma, dgamma(seq.sigma, shape = sigma.gamma$estimate[1], rate = sigma.gamma$estimate[2] ), col = 'red') 
-
-hist(xi.all.stat, freq = FALSE, main ='', xlab = expression(xi), ylab = '' ,cex.lab = 2)
-sd <- sd(xi.all.stat)
-mean <- mean(xi.all.stat)
-seq.xi <- seq(from =min(xi.all.stat) - .1, to =max(xi.all.stat) + .1, by = .01)
-lines(seq.xi, dnorm(seq.xi, mean = mean, sd = sd), col = 'red')
-
-par(oma = c(3,2,3,0))
-mtext(text = 'Density', side = 2, outer = TRUE)
-mtext(text = 'Parameter Values', side = 1, outer = TRUE)
-title('Distribution of Stationary Parameters of Different Tide Stations', outer = TRUE)
 
 mu0.mu.nonstat <- c(boston.priors$mu[1], 
                  atlantic.city.priors$mu[1], 
@@ -436,35 +390,6 @@ xi.mu.nonstat <- c(boston.priors$mu[4],
                    portland.priors$mu[4], 
                    duck.pier.priors$mu[4], 
                    newport.priors$mu[4])
-
-par(mfrow = c(2,2))
-par(oma = c(3,3,3,3))
-hist(mu0.mu.nonstat, freq= FALSE, main = '', xlab = expression(mu[0]), ylab = '', cex.lab = 1.5) 
-mu0.gamma <- fitdistr(mu0.mu.nonstat, 'gamma')
-mu0.seq <- seq(from = min (mu0.mu.nonstat) - 500, to = max(mu0.mu.nonstat) + 300, by = 1)
-lines(mu0.seq, dgamma(mu0.seq, shape = mu0.gamma$estimate[1], rate = mu0.gamma$estimate[2]), col = 'red')
-
-hist(mu1.mu.nonstat, freq= FALSE, main = '', xlab = expression(mu[1]), ylab = '', cex.lab = 1.5)
-sd <- sd(mu1.mu.nonstat)
-mean <- mean(mu1.mu.nonstat)
-mu1.seq <- seq(from = min (mu1.mu.nonstat) - 100, to = max(mu1.mu.nonstat) + 300, by = 1)
-lines(mu1.seq, dnorm(mu1.seq, mean = mean, sd = sd), col = 'red')
-
-hist(sigma.mu.nonstat, freq= FALSE, main = '', xlab = expression(sigma), ylab = '', cex.lab = 1.5)
-sigma.gamma <- fitdistr(sigma.mu.nonstat, 'gamma')
-sigma.seq <- seq(from = min (sigma.mu.nonstat) - 20, to = max(sigma.mu.nonstat) + 300, by = 1)
-lines(sigma.seq, dgamma(sigma.seq, shape = sigma.gamma$estimate[1], rate = sigma.gamma$estimate[2]), col = 'red')
-
-hist(xi.mu.nonstat, freq= FALSE, main = '', xlab = expression(xi), ylab = '', cex.lab = 1.5)
-sd <- sd(xi.mu.nonstat)
-mean <- mean(xi.mu.nonstat)
-seq.xi <- seq(from =min(xi.mu.nonstat) - .1, to =max(xi.mu.nonstat) + .1, by = .01)
-lines(seq.xi, dnorm(seq.xi, mean = mean, sd = sd), col = 'red')
-
-par(oma = c(3,3,3,0))
-title('Distribution of Parameters of Different Tide Stations With Mu Non-Stationary', outer = TRUE)
-mtext(text = 'Parameter Values', side = 1, outer = TRUE)
-mtext(text = 'Density', side = 2, outer = TRUE)
 
 mu0.all.nonstat <- c(boston.priors$mu.sigma.xi[1], 
                     atlantic.city.priors$mu.sigma.xi[1], 
@@ -532,25 +457,6 @@ xi1.all.nonstat <- c(boston.priors$mu.sigma.xi[6],
                      portland.priors$mu.sigma.xi[6], 
                      duck.pier.priors$mu.sigma.xi[6], 
                      newport.priors$mu.sigma.xi[6])
-par(mfrow = c(2,3))
-hist(mu0.all.nonstat, freq= FALSE) 
-hist(mu1.all.nonstat, freq= FALSE)
-plot(dnorm(mu1.all.nonstat), col = 'red', type = 'l')
-hist(sigma0.all.nonstat, freq= FALSE)
-hist(sigma1.all.nonstat, freq= FALSE)
-hist(xi0.all.nonstat, freq= FALSE)
-hist(xi1.all.nonstat, freq= FALSE)
-#hist.prep <- vector('list', 5)
-#names(hist.prep) <- c('all.stat.mu','all.stat.sigma','all.stat.xi', 'mu.nonstat.mu0', 'mu.nonstat.mu1')
-#for( i in 1:length((mega.priors.list))){
-  
-#}
-install.packages('fitdistrplus')
-library(fitdistrplus)
-dist <- fitdistr(mu1.all.nonstat, 'normal')
-plot(dist)
-
-#save.image('east.coast.RData')
 
 mu0.mu.sig.nonstat <- c(boston.priors$mu.sigma[1], 
                        atlantic.city.priors$mu.sigma[1], 
@@ -606,6 +512,9 @@ xi0.mu.sig.nonstat <- c(boston.priors$mu.sigma[5],
                         portland.priors$mu.sigma[5], 
                         duck.pier.priors$mu.sigma[5], 
                         newport.priors$mu.sigma[5])
+
+#plot of histograms of DEOptim runs of each tide station--------------------------  
+
 #MEGA FIGURE----------------------------------------------
 row1 <- c(1, 2, 3, 4, 5, 6)
 row2 <- c(7, 8,9,10,11,12)
